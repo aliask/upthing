@@ -26,7 +26,7 @@
   </div>
   <div class="form-group">
     <div class="md:w-1/3">
-      <label class="form-label @error('uptoken') text-red-400 @enderror" for="uptoken">Up API token</label>
+      <label class="form-label @error('uptoken') text-red-400 @enderror" for="uptoken">Up API token <a href="https://api.up.com.au/getting_started">(here)</a></label>
     </div>
     <div class="md:w-2/3">
       <input required class="form-input" id="uptoken" name="uptoken" type="text" autofocus>
