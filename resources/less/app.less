@@ -1,0 +1,63 @@
+@tailwind base;
+
+h1 {
+  @apply text-2xl;
+  @apply mb-5;
+}
+h2 {
+  @apply text-xl;
+  @apply mb-5;
+}
+h3 {
+  @apply text-lg;
+  @apply mb-5;
+}
+
+/* Navbar */
+
+.navbar {
+  @apply flex items-center justify-between flex-wrap bg-orange-500 p-6;
+  .logo {
+    @apply flex items-center flex-shrink-0 text-white mr-6;
+    svg {
+      @apply fill-current h-8 w-8 mr-2;
+    }
+    span {
+      @apply font-semibold text-xl tracking-tight;
+    }
+  }
+  .links {
+    @apply flex-grow flex items-center w-auto;
+  }
+}
+
+.btn-action {
+  @apply shadow bg-purple-500 text-white font-bold py-2 px-4 rounded;
+  &:hover {
+    @apply bg-purple-400;
+  }
+  &:focus {
+    @apply shadow-outline outline-none;
+  }
+}
+
+/* Form elements */
+
+.form-input {
+  @apply appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight;
+  &:focus {
+    @apply outline-none bg-white border-purple-500;
+  }
+}
+
+.form-label {
+  @apply block text-gray-500 font-bold pr-4 mb-1;
+}
+
+.form-group {
+  @apply mb-6 flex items-center;
+}
+
+@tailwind components;
+
+@tailwind utilities;
