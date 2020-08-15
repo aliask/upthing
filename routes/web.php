@@ -19,3 +19,7 @@ Route::get('/', function () {
 
 Route::resource('accounts', 'AccountsController');
 Route::resource('webhooks', 'WebhooksController');
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');

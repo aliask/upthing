@@ -10,6 +10,8 @@ class UpbankAPI extends Controller
 
     protected const BASE_URI = 'https://api.up.com.au/api/v1/';
 
+    private $api;
+
     public function __construct()
     {
         $this->api = Http::baseUrl(self::BASE_URI)
