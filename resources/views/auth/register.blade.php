@@ -18,18 +18,10 @@
   @csrf
   <div class="form-group">
     <div class="md:w-1/3">
-      <label class="form-label @error('name') text-red-400 @enderror" for="name">Name</label>
+      <label class="form-label @error('name') text-red-400 @enderror" for="name">Username</label>
     </div>
     <div class="md:w-2/3">
       <input required class="form-input" id="name" name="name" type="text" autofocus>
-    </div>
-  </div>
-  <div class="form-group">
-    <div class="md:w-1/3">
-      <label class="form-label @error('email') text-red-400 @enderror" for="email">E-mail</label>
-    </div>
-    <div class="md:w-2/3">
-      <input required class="form-input" id="email" name="email" type="email">
     </div>
   </div>
   <div class="form-group">
