@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="{{ asset('css/tw.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
   <title>UpThing - @yield('title')</title>
 </head>
@@ -31,9 +31,15 @@
         </a>
       </div>
 
-      <div>
-        <a href="#" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-orange-500 hover:bg-white mt-4 lg:mt-0">Download</a>
-      </div>
+@if(Auth::user())
+  <span class="block mt-4 lg:inline-block lg:mt-0 text-orange-200 hover:text-white mr-4">{{Auth::user()->name}}</span>
+@else
+  @if(Route::has('register'))
+    <div>
+      <a href="{{ route('register') }}" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-orange-500 hover:bg-white mt-4 lg:mt-0">Register</a>
+    </div>
+  @endif
+@endif
     </div>
   </nav>
 
@@ -81,7 +87,7 @@
       </div>
     </div>
 
-    <div class="min-h-screen w-full lg:static lg:max-h-full lg:overflow-visible lg:w-3/4 xl:w-4/5  lg:py-12">
+    <div class="w-full lg:static lg:max-h-full lg:overflow-visible lg:w-3/4 xl:w-4/5 lg:py-12">
 
       <h2 class="title m-b-md">
         @yield('title')
@@ -89,7 +95,7 @@
 
 @if(Session::has('error'))
       <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-        <strong class="font-bold">Holy smokes!</strong>
+        <strong class="font-bold">Hey!</strong>
         <span class="block sm:inline">{{ Session::get('error') }}</span>
         <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
           <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
