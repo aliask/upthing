@@ -17,7 +17,7 @@ Route::get('/', function () {
     return redirect(route('accounts.index'));
 });
 
-Route::resource('accounts', 'AccountsController');
-Route::resource('webhooks', 'WebhooksController');
+Route::resource('accounts', 'AccountsController')->middleware('auth');
+Route::resource('webhooks', 'WebhooksController')->middleware('auth');
 
 Auth::routes(['register' => true, 'reset' => false, 'confirm' => false]);

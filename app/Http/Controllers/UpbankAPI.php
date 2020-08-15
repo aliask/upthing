@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Http\Request;
 
 class UpbankAPI extends Controller
 {
@@ -12,10 +11,10 @@ class UpbankAPI extends Controller
 
     private $api;
 
-    public function __construct()
+    public function __construct($uptoken)
     {
         $this->api = Http::baseUrl(self::BASE_URI)
-                    ->withHeaders(['Authorization' => 'Bearer ' . env('UPBANK_PAT')]);
+                    ->withHeaders(['Authorization' => 'Bearer ' . $uptoken]);
     }
 
     /**
