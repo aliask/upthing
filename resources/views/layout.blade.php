@@ -32,7 +32,10 @@
       </div>
 
 @if(Auth::user())
-  <span class="block mt-4 lg:inline-block lg:mt-0 text-orange-200 hover:text-white mr-4">{{Auth::user()->name}}</span>
+  <form action="{{ route('logout') }}" method="POST">
+    @csrf
+    <button type="submit" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-orange-500 hover:bg-white mt-4 lg:mt-0">{{Auth::user()->name}} - Sign out</button>
+  </form>
 @else
   @if(Route::has('register'))
     <div>
