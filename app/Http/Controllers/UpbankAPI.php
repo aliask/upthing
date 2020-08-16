@@ -62,6 +62,20 @@ class UpbankAPI extends Controller
     }
 
     /**
+     * @param string $transaction Upbank ID
+     * @return object
+     */
+    public function getTransaction($transaction) {
+        $response = $this->api->get("/transactions/$transaction");
+        $response->throw();
+        $json = json_decode($response->getBody());
+        if(isset($json->data))
+            return $json->data;
+        else
+            return new \stdClass();
+    }
+
+    /**
      * @param integer $pageSize Page size
      * @return object
      */
