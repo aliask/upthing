@@ -49878,8 +49878,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /home/aliask/upbank/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /home/aliask/upbank/resources/less/app.less */"./resources/less/app.less");
+__webpack_require__(/*! /var/www/upthing/resources/js/app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! /var/www/upthing/resources/less/app.less */"./resources/less/app.less");
 
 
 /***/ })

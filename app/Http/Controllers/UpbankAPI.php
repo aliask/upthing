@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class UpbankAPI extends Controller
 {
@@ -80,7 +81,26 @@ class UpbankAPI extends Controller
      * @return object
      */
     public function createWebhook($url, $description) {
-        $response = $this->api->post('/webhooks', ['data' => compact(['url','description']) ] );
+        $data = ['data' => [ 'attributes' => compact(['url','description']) ]];
+        Log::info('UpAPI: Create webhook - ' . json_encode($data));
+        $response = $this->api->post('/webhooks', $data);
+        Log::debug('UpAPI: Response - ' . $response->getBody());
+        $response->throw();
+        $json = json_decode($response->getBody());
+        if(isset($json->data))
+            return $json->data;
+        else
+            return new \stdClass();
+    }
+
+    /**
+     * @param string $upid
+     * @return object
+     */
+    public function pingWebhook($upid) {
+        Log::info("UpAPI: Ping webhook - $upid");
+        $response = $this->api->post("/webhooks/$upid/ping");
+        Log::debug('UpAPI: Response - ' . $response->getBody());
         $response->throw();
         $json = json_decode($response->getBody());
         if(isset($json->data))
