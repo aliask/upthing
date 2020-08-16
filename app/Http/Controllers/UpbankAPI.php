@@ -123,5 +123,17 @@ class UpbankAPI extends Controller
             return new \stdClass();
     }
 
+    public function deleteWebhook($upid) {
+        Log::info("UpAPI: Delete webhook - $upid");
+        $response = $this->api->delete("/webhooks/$upid");
+        Log::debug('UpAPI: Response - ' . $response->getBody());
+        $response->throw();
+        $json = json_decode($response->getBody());
+        if(isset($json->data))
+            return $json->data;
+        else
+            return new \stdClass();
+    }
+
 
 }

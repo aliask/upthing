@@ -21,12 +21,17 @@
       </thead>
     <tbody class="text-gray-700">
   @forelse ($webhooks as $i=>$webhook)
+      <!-- @json($webhook) -->
       <tr class="{{ ($i%2)?'bg-gray-100':''}}">
         <td class="w-1/3 text-left py-3 px-4">{{ $webhook->description }}</td>
         <td class="w-1/3 text-left py-3 px-4">{{ $webhook->created_at }}</td>
         <td class="text-right py-3 px-4">
+    @if($webhook->id)
           <a class="btn-action" href="{{ route('webhooks.ping', $webhook->id) }}">Ping</a>
-          <a class="btn-action">Delete</a>
+          <a class="btn-action" href="{{ route('webhooks.delete', $webhook->id) }}">Delete</a>
+    @else
+          <a class="btn-action" href="{{ route('webhooks.serverdelete', $webhook->upid) }}">Delete from server</a>
+    @endif
         </td>
       </tr>
   @empty
