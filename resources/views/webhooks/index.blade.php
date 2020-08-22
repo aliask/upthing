@@ -2,9 +2,11 @@
 @section('title', 'Webhooks')
 
 @section('actions')
+<div class="py-1">
   <a href="{{ route('webhooks.create') }}" class="btn-action">
     <i data-feather="plus"></i> Create new webhook
   </a>
+</div>
 @endsection
 
 @section('content')
@@ -21,7 +23,7 @@
   @forelse ($webhooks as $i=>$webhook)
       <!-- @json($webhook) -->
       <tr class="{{ ($i%2)?'bg-gray-100':''}}">
-        <td class="expand">{{ $webhook->description }}</td>
+        <td class="expand"><a href="{{ route('webhooks.show', $webhook->id) }}">{{ $webhook->description }}</a></td>
         <td class="expand">{{ $webhook->actionFriendly }}</td>
         <td class="shrink">{{ $webhook->created_at }}</td>
         <td class="text-right shrink">
