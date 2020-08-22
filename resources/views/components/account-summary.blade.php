@@ -6,10 +6,8 @@
       </svg>
     </div>
     <div>
-      <a href="{{ route('accounts.show', ['account' => $account->upid ]) }}">
-        <p class="font-bold">{{ $account->name }}</p>
-        <p class="text-sm">{{ $account->balanceFormatted }}</p>
-      </a>
+      <p class="font-bold">{{ $account->name }}</p>
+      <p class="text-sm">{{ $account->balanceFormatted }}</p>
     </div>
   </div>
   <!-- @json($account) -->

@@ -3,7 +3,7 @@
 
 @section('content')
 
-<form class="w-1/2" action="{{ route('login') }}" method="POST">
+<form action="{{ route('login') }}" method="POST">
   @csrf
   <div class="form-group">
     <div class="md:w-1/3">

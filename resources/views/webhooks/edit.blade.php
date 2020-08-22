@@ -2,7 +2,7 @@
 @section('title', 'Edit Webhook')
 
 @section('content')
-<form class="w-3/4" action="{{ route('webhooks.update', ['webhook' => $webhook->id]) }}" method="POST">
+<form action="{{ route('webhooks.update', ['webhook' => $webhook->id]) }}" method="POST">
   @csrf
   @method('PATCH')
   <div class="form-group">
