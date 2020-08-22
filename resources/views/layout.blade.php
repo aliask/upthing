@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+  <script src="https://unpkg.com/feather-icons"></script>
 
   <title>UpThing - @yield('title')</title>
 </head>
@@ -22,45 +23,35 @@
     </div>
 
     <div class="links">
-      <div class="text-sm lg:flex-grow">
-        <a href="{{ route('accounts.index') }}" class="block mt-4 lg:inline-block lg:mt-0 text-orange-200 hover:text-white mr-4">
-          Accounts
-        </a>
-        <a href="{{ route('webhooks.index') }}" class="block mt-4 lg:inline-block lg:mt-0 text-orange-200 hover:text-white mr-4">
-          Webhooks
-        </a>
-      </div>
 
 @if(Auth::user())
   <form action="{{ route('logout') }}" method="POST">
     @csrf
-    <button type="submit" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-orange-500 hover:bg-white mt-4 lg:mt-0">{{Auth::user()->username}} - Sign out</button>
+    <button type="submit" class="btn">{{Auth::user()->username}} - Sign out</button>
   </form>
 @else
   @if(Route::has('register'))
-    <div>
-      <a href="{{ route('register') }}" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-orange-500 hover:bg-white mt-4 lg:mt-0">Register</a>
-    </div>
+    <a href="{{ route('register') }}" class="btn">Register</a>
   @endif
 @endif
     </div>
   </nav>
 
-  <div id="mainBody" class="lg:flex">
-    <div id="sidebar" class="fixed inset-0 h-full bg-white z-90 w-full border-b -mb-16 lg:-mb-0 lg:static lg:h-auto lg:overflow-y-visible lg:border-b-0 lg:pt-0 lg:w-1/4 lg:block lg:border-0 xl:w-1/5 hidden pt-16">
-      <div id="navWrapper" class="h-full overflow-y-auto scrolling-touch lg:h-auto lg:block lg:relative lg:sticky lg:bg-transparent overflow-hidden lg:top-16 bg-white">
-        <nav id="nav" class="px-6 pt-6 overflow-y-auto text-base lg:text-sm lg:py-12 lg:pl-6 lg:pr-8 sticky?lg:h-(screen-16)">
-          <div class="mb-8">
-            <h5 class="mb-3 lg:mb-2 uppercase tracking-wide font-bold text-sm lg:text-xs text-gray-500">Navigate</h5>
+  <div id="mainBody" class="flex">
+    <div id="sidebar">
+      <div id="navWrapper">
+        <nav id="nav">
+          <div class="section">
+            <h5>Navigate</h5>
             <ul>
-              <li class="mb-3 lg:mb-1">
-                <a href="{{ route('accounts.index') }}" class="px-2 -mx-2 py-1 transition duration-200 ease-in-out relative block hover:translate-x-2px hover:text-gray-900 text-gray-600 font-medium">
-                  <span class="relative">Accounts</span></a>
+              <li>
+                <a href="{{ route('accounts.index') }}" class="link">
+                  <i data-feather="bar-chart-2"></i><span class="p-1">Accounts</span></a>
 @if(isset($accounts))
                 <ul>
   @foreach($accounts as $account)
-                  <li class="mb-3 lg:mb-1 ml-5">
-                    <a href="{{ route('accounts.show', $account->id) }}" class="px-2 -mx-2 py-1 transition duration-200 ease-in-out relative block hover:translate-x-2px hover:text-gray-900 text-gray-600 font-medium">
+                  <li class="ml-5">
+                    <a href="{{ route('accounts.show', $account->id) }}" class="link">
                       {{ $account->attributes->displayName }}
                     </a>
                   </li>
@@ -68,18 +59,35 @@
                 </ul>
 @endif
               </li>
-              <li class="mb-3 lg:mb-1">
-                <a href="{{ route('webhooks.index') }}" class="px-2 -mx-2 py-1 transition duration-200 ease-in-out relative block hover:translate-x-2px hover:text-gray-900 text-gray-600 font-medium">
-                  <span class="relative">Webhooks</span>
+              <li>
+                <a href="{{ route('webhooks.index') }}" class="link">
+                  <i data-feather="send"></i><span class="p-1">Webhooks</span>
                 </a>
               </li>
             </ul>
           </div>
+
+
+          <div class="section">
+            <h5>Links</h5>
+            <ul>
+              <li>
+                <a href="https://github.com/aliask/upthing" class="link">
+                  <i data-feather="github"></i><span class="p-1">UpThing on GitHub</span></a>
+              </li>
+              <li>
+                <a href="https://willrobertson.id.au/" class="link">
+                  <i data-feather="feather"></i><span class="p-1">Will Robertson</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
         </nav>
       </div>
     </div>
 
-    <div class="w-full lg:static lg:max-h-full lg:overflow-visible lg:w-3/4 xl:w-4/5 lg:py-12">
+    <div id="contentArea" class="">
 
       <h2 class="title m-b-md">
         @yield('title')
@@ -108,6 +116,10 @@
     </div>
 
   </div> <!-- mainBody -->
+
+  <script>
+    feather.replace()
+  </script>
 
 </body>
 
