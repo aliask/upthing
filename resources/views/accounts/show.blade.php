@@ -3,18 +3,12 @@
 
 @section('content')
 <div class="w-3/4">
-  <x-account
-              :name="$account->attributes->displayName"
-              :balance="$account->attributes->balance->value"
-              :upid="$account->id"
-              />
+  <x-accountSummary :account="$account"/>
 
-  @forelse ($transactions as $transaction)
-    <x-transaction
-      :transaction="$transaction"
-      />
-  @empty
+  @if (count($transactions))
+    <x-transactions :transactions="$transactions"/>
+  @else
     No transactions to show.
-  @endforelse
+  @endif
 </div>
 @endsection

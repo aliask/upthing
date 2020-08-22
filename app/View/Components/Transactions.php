@@ -4,19 +4,19 @@ namespace App\View\Components;
 
 use Illuminate\View\Component;
 
-class Transaction extends Component
+class Transactions extends Component
 {
 
-    public $transaction;
+    public $transactions;
 
     /**
      * Create a new component instance.
      *
      * @return void
      */
-    public function __construct($transaction)
+    public function __construct($transactions)
     {
-        $this->transaction = $transaction;
+        $this->transactions = $transactions;
     }
 
     /**
@@ -26,6 +26,6 @@ class Transaction extends Component
      */
     public function render()
     {
-        return view('components.transaction');
+        return view('components.transactions');
     }
 }

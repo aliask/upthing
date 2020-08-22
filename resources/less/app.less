@@ -66,6 +66,29 @@ h3 {
   }
 }
 
+.transaction {
+  @apply border-b border-gray-400 pt-2;
+  &:hover {
+    @apply bg-gray-100;
+  }
+
+  td {
+    @apply px-1;
+  }
+
+  .credit {
+    @apply text-green-700;
+  }
+  .debit {
+    @apply text-red-700;
+  }
+}
+
+td.shrink {
+  white-space: nowrap;
+  width: 1%;
+}
+
 #contentArea {
   @apply w-full static max-h-full overflow-visible w-3/4 py-12;
 }
