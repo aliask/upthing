@@ -51,8 +51,8 @@
                 <ul>
   @foreach($accounts as $account)
                   <li class="ml-5">
-                    <a href="{{ route('accounts.show', $account->id) }}" class="link">
-                      {{ $account->attributes->displayName }}
+                    <a href="{{ route('accounts.show', $account->upid) }}" class="link">
+                      {{ $account->name }}
                     </a>
                   </li>
   @endforeach

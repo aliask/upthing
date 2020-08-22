@@ -6,9 +6,9 @@
       </svg>
     </div>
     <div>
-      <a href="{{ route('accounts.show', ['account' => $upid ]) }}">
-        <p class="font-bold">{{ $name }}</p>
-        <p class="text-sm">${{ $balance }}</p>
+      <a href="{{ route('accounts.show', ['account' => $account->upid ]) }}">
+        <p class="font-bold">{{ $account->name }}</p>
+        <p class="text-sm">{{ $account->balanceFormatted }}</p>
       </a>
     </div>
   </div>

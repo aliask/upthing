@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Transaction;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -54,11 +52,7 @@ class AccountsController extends Controller
         $api = new UpbankAPI(Auth::user()->uptoken);
         $accounts = $api->getAccounts();
         $account = $api->getAccount($id);
-        $txs = $api->getAccountTransactions($id);
-        $transactions = new Collection();
-        foreach($txs as $transaction) {
-            $transactions->push(new Transaction($transaction->id, $transaction->attributes));
-        }
+        $transactions = $api->getAccountTransactions($id);
         return view('accounts.show', compact(['account', 'transactions', 'accounts']));
     }
 
