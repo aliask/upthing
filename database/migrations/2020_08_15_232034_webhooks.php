@@ -18,6 +18,8 @@ class Webhooks extends Migration
             $table->foreignId('user_id')->constrained();
             $table->string('upid')->nullable();
             $table->string('description');
+            $table->string('action_type');
+            $table->string('action_url');
             $table->string('secret_key')->nullable();
             $table->timestamps();
         });
