@@ -203,7 +203,7 @@ class WebhooksController extends Controller
     }
 
     /**
-     * Process an incoming webhook
+     * Process an incoming webhook - checks validity & then calls processHookTransaction
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  string $user
@@ -247,6 +247,12 @@ class WebhooksController extends Controller
         return response()->json(["data" => "Webhook processed"]);
     }
 
+    /**
+     * Ask Up to send a ping to the requested Webhook
+     * 
+     * @param int $id Up ID of Webhook to request ping to
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function ping($id) {
         $hook = WebhookEndpoint::findOrFail($id);
         if(Auth::user()->id == $hook->user_id) {
@@ -258,6 +264,13 @@ class WebhooksController extends Controller
         return redirect()->back()->with('message', "Ping requested");
     }
 
+    /**
+     * Decides what to do with an incoming Webhook from Up
+     * 
+     * @param \App\WebhookEndpoint $hook Webhook which triggered this call
+     * @param \App\Transaction $transaction Transaction to process
+     * @return null
+     */
     private function processHookTransaction($hook, $transaction) {
         Log::notice("Performing action for incoming webhook");
         Log::debug("  Webhook: " . json_encode($hook));
@@ -271,12 +284,23 @@ class WebhooksController extends Controller
                 return $this->sendGoogleScript('post', $hook->action_url, $transaction);
                 break;
             case 'discord':
+                return $this->sendDiscord($hook->action_url, $transaction);
+                break;
             default:
                 Log::warning('Not implemented');
         }
         return;
     }
 
+    /**
+     * Sends a request to a Google Script: https://developers.google.com/apps-script/guides/web
+     * JSON payload needs to be handled by your Google Script (e.g. Insert a line to a spreadsheet)
+     * 
+     * @param string $method 'get' or 'post' - to trigger doGet() or doPost() respectively 
+     * @param string $url The URL of the Google Sheets endpoint (e.g. https://script.google.com/macros/s/{scriptid}/exec)
+     * @param \App\Transaction $transaction Transaction to send
+     * @return null
+     */
     private function sendGoogleScript($method, $url, $transaction) {
         $sendTx = [
             'method'        => 'sendTx',
@@ -297,6 +321,34 @@ class WebhooksController extends Controller
                 Log::warning("Unknown method");
                 return;
         }
+        Log::debug("Result: " . $response->getBody());
+    }
+
+    /**
+     * Sends a Webhook to Discord according to the API: https://discord.com/developers/docs/resources/webhook#execute-webhook
+     * 
+     * @param string $url The URL of the Discord endpoint (e.g. https://discordapp.com/api/webhooks/{id}/{token})
+     * @param \App\Transaction $transaction Transaction to send
+     * @return null
+     */
+    private function sendDiscord($url, $transaction) {
+        $fields[] = [
+            'name' => 'Description',
+            'value' => $transaction->description . " (" . $transaction->rawText . ")",
+            'inline' => true
+        ];  
+        $fields[] = [
+            'name' => 'Amount',
+            'value' => $transaction->amountFormatted,
+            'inline' => true
+        ];
+        $embeds[] = [
+            "title" => "UpBank Transaction Settled",
+            "type" => "rich",
+            "fields" => $fields
+        ];
+        $payload = ["embeds" => $embeds];
+        $response = Http::post($url, $payload);
         Log::debug("Result: " . $response->getBody());
     }
 

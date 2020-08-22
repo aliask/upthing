@@ -24,7 +24,7 @@
       <!-- @json($webhook) -->
       <tr class="{{ ($i%2)?'bg-gray-100':''}}">
         <td class="expand">{{ $webhook->description }}</td>
-        <td class="expand">Test</td>
+        <td class="expand">{{ $webhook->actionFriendly }}</td>
         <td class="shrink">{{ $webhook->created_at }}</td>
         <td class="text-right shrink p-4">
     @if($webhook->id)

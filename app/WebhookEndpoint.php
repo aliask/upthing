@@ -21,4 +21,17 @@ class WebhookEndpoint extends Model
     {
         return $this->belongsTo('App\User');
     }
+
+    public function getActionFriendlyAttribute() {
+        switch($this->action_type) {
+            case "google_script_get":
+                return 'Google Script GET';
+            case "google_script_post":
+                return 'Google Script POST';
+            case "discord":
+                return 'Discord Notification';
+            default:
+                return $this->action_type;
+        }
+    }
 }

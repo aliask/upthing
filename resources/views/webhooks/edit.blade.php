@@ -20,8 +20,8 @@
     </div>
     <div class="md:w-2/3">
       <select required class="form-input" id="action_type" name="action_type">
-        <option value="google_script_post" {{ $webhook->action_type==="google_script_post"?'selected':'' }}>Google Scripts doPost</option>
-        <option value="google_script_get" {{ $webhook->action_type==="google_script_get"?'selected':'' }}>Google Scripts doGet</option>
+        <option value="google_script_post" {{ $webhook->action_type==="google_script_post"?'selected':'' }}>Google Scripts POST</option>
+        <option value="google_script_get" {{ $webhook->action_type==="google_script_get"?'selected':'' }}>Google Scripts GET</option>
         <option value="discord" {{ $webhook->action_type==="discord"?'selected':'' }}>Discord Notification</option>
       </select>
     </div>

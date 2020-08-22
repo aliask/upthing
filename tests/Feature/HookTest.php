@@ -115,16 +115,36 @@ PAYLOAD;
     }
 
     /**
-     * Test an incoming transaction notification.
+     * Test an incoming transaction send to Gsheets via POST.
      *
      * @return void
      */
-    public function testIncomingTransaction()
+    public function testIncomingTransactionGoogleScriptPost()
     {
       $payload = json_decode($this->samplePayload);
       $payload->data->attributes->eventType = "TRANSACTION_SETTLED";
 
-      $hook = WebhookEndpoint::where('secret_key', env('API_TEST_SECRET'))->first();
+      $hook = WebhookEndpoint::where('action_type', 'google_script_post')->first();
+
+      $signature = hash_hmac('sha256', json_encode($payload), $hook->secret_key);
+
+      $response = $this->postJson("/hook/test/$hook->id", (array)$payload, [
+                      'X-Up-Authenticity-Signature' => $signature
+                    ]);
+      $response->assertStatus(200);
+    }
+
+    /**
+     * Test an incoming transaction send to Discord.
+     *
+     * @return void
+     */
+    public function testIncomingTransactionDiscord()
+    {
+      $payload = json_decode($this->samplePayload);
+      $payload->data->attributes->eventType = "TRANSACTION_SETTLED";
+
+      $hook = WebhookEndpoint::where('action_type', 'discord')->first();
 
       $signature = hash_hmac('sha256', json_encode($payload), $hook->secret_key);
 
