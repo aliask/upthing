@@ -795,6 +795,18 @@ h3 {
   color: rgba(197, 48, 48, var(--text-opacity));
 }
 
+.webhooks thead {
+  border-bottom-width: 1px;
+}
+
+.webhooks td,
+.webhooks th {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
 td.shrink {
   white-space: nowrap;
   width: 1%;

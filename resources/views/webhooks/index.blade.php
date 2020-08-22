@@ -8,7 +8,7 @@
 @endsection
 
 @section('content')
-  <table class="min-w-full">
+  <table class="min-w-full webhooks">
       <thead>
         <tr>
           <th>Description</th>
@@ -24,7 +24,7 @@
         <td class="expand">{{ $webhook->description }}</td>
         <td class="expand">{{ $webhook->actionFriendly }}</td>
         <td class="shrink">{{ $webhook->created_at }}</td>
-        <td class="text-right shrink p-4">
+        <td class="text-right shrink">
     @if($webhook->id)
           <a class="btn-action" href="{{ route('webhooks.ping', $webhook->id) }}" title="Ping"><i data-feather="activity"></i></a>
           <a class="btn-action" href="{{ route('webhooks.edit', $webhook->id) }}" title="Edit"><i data-feather="edit"></i></a>
