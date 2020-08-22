@@ -30,7 +30,7 @@ class UpbankAPI extends Controller
         Log::debug('UpAPI: Response - ' . $response->getBody());
         $response->throw();
         $json = json_decode($response->getBody());
-        if(!$json->data) {
+        if(!isset($json->data)) {
             throw new Exception("Unexpected format returned by Up API");
         }
         return $json->data;
@@ -41,6 +41,7 @@ class UpbankAPI extends Controller
      * @return Collection Collection of Account Models
      */
     public function getAccounts($pageSize = 30) {
+        Log::info("UpAPI: getAccounts");
         $response = $this->api->get('/accounts', ['page[size]' => $pageSize ]);
         $data = $this->processResponse($response);
         $accounts = new Collection();
@@ -55,6 +56,7 @@ class UpbankAPI extends Controller
      * @return Account Account Model
      */
     public function getAccount($upid) {
+        Log::info("UpAPI: getAccount $upid");
         $response = $this->api->get("/accounts/$upid");
         $data = $this->processResponse($response);
         return new Account($data);
@@ -66,6 +68,7 @@ class UpbankAPI extends Controller
      * @return Collection
      */
     public function getAccountTransactions($account, $pageSize = 100) {
+        Log::info("UpAPI: getAccountTransactions $account");
         $response = $this->api->get("/accounts/$account/transactions", ['page[size]' => $pageSize ]);
         Log::debug('UpAPI: Response - ' . $response->getBody());
         $data = $this->processResponse($response);
@@ -81,6 +84,7 @@ class UpbankAPI extends Controller
      * @return Transaction
      */
     public function getTransaction($transaction) {
+        Log::info("UpAPI: getTransaction $transaction");
         $response = $this->api->get("/transactions/$transaction");
         $data = $this->processResponse($response);
         return new Transaction($data);
@@ -91,6 +95,7 @@ class UpbankAPI extends Controller
      * @return object
      */
     public function getWebhooks($pageSize = 30) {
+        Log::info("UpAPI: Get webhooks");
         $response = $this->api->get('/webhooks', ['page[size]' => $pageSize ]);
         $data = $this->processResponse($response);
         return $data;
