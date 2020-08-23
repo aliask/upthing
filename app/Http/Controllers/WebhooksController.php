@@ -57,13 +57,14 @@ class WebhooksController extends Controller
     public function store(Request $request)
     {
         $endpoint = null;
-        try {
-            $validatedData = $request->validate([
-                'description'   => 'required|max:64',
-                'action_type'   => 'required|in:google_script_get,google_script_post,discord',
-                'action_url'    => 'required|url'
-            ]);
+        $valid_action_types = implode(',', array_keys(\App\WebhookEndpoint::action_types));
+        $validatedData = $request->validate([
+            'description'   => 'required|max:64',
+            'action_type'   => "required|in:$valid_action_types",
+            'action_url'    => 'required|url'
+        ]);
 
+        try {
             $endpoint = WebhookEndpoint::create([
                 'user_id'       => Auth::user()->id,
                 'description'   => $validatedData['description'],
@@ -238,14 +239,25 @@ class WebhooksController extends Controller
         Log::notice("Received webhook type: $hookType");
         switch($hookType) {
             case 'TRANSACTION_SETTLED':
+            case 'TRANSACTION_CREATED':
                 $txid = $payload->data->relationships->transaction->data->id;
                 $api = new UpbankAPI(User::find($hook->user_id)->uptoken);
                 $transaction = $api->getTransaction($txid);
-                $this->processHookTransaction($hook, $transaction);
+
+                if($transaction->status !== "SETTLED") {
+                    Log::debug("Skipping action for pending transaction");
+                    break;
+                }
+
+                $method = $hook->handler;
+                if($method) {
+                    $this->$method($hook->action_url, $transaction);
+                } else {
+                    Log::warning("No handler for $hook->action_type");
+                }
                 break;
             case 'PING':
             case 'TRANSACTION_DELETED':
-            case 'TRANSACTION_CREATED':
                 break;
             default:
                 Log::warning("Unknown webhook type received: $hookType");
@@ -271,62 +283,35 @@ class WebhooksController extends Controller
     }
 
     /**
-     * Decides what to do with an incoming Webhook from Up
+     * Sends a POST request with JSON-encoded transaction
      * 
-     * @param \App\WebhookEndpoint $hook Webhook which triggered this call
-     * @param \App\Transaction $transaction Transaction to process
-     * @return null
-     */
-    private function processHookTransaction($hook, $transaction) {
-        Log::notice("Performing action for incoming webhook");
-        Log::debug("  Webhook: " . json_encode($hook));
-        Log::debug("  Transaction: " . json_encode($transaction));
-
-        switch($hook->action_type) {
-            case 'google_script_get':
-                return $this->sendGoogleScript('get', $hook->action_url, $transaction);
-                break;
-            case 'google_script_post':
-                return $this->sendGoogleScript('post', $hook->action_url, $transaction);
-                break;
-            case 'discord':
-                return $this->sendDiscord($hook->action_url, $transaction);
-                break;
-            default:
-                Log::warning('Not implemented');
-        }
-        return;
-    }
-
-    /**
-     * Sends a request to a Google Script: https://developers.google.com/apps-script/guides/web
-     * JSON payload needs to be handled by your Google Script (e.g. Insert a line to a spreadsheet)
-     * 
-     * @param string $method 'get' or 'post' - to trigger doGet() or doPost() respectively 
-     * @param string $url The URL of the Google Sheets endpoint (e.g. https://script.google.com/macros/s/{scriptid}/exec)
+     * @param string $url The URL of the POST endpoint
      * @param \App\Transaction $transaction Transaction to send
      * @return null
      */
-    private function sendGoogleScript($method, $url, $transaction) {
+    private function sendPost($url, $transaction) {
+        $sendTx = $transaction->rawTransaction;
+        Log::debug("Req to $url: " . json_encode($sendTx));
+        $response = Http::post($url, (array)$sendTx);
+        Log::debug("Result: " . $response->getBody());
+    }
+
+    /**
+     * Sends a GET querystring, eg. http://example.com/hook?date=2020-01-01&description=Money%20for%20socks&value=450.00
+     * 
+     * @param string $url The URL of the GET endpoint
+     * @param \App\Transaction $transaction Transaction to send
+     * @return null
+     */
+    private function sendGet($url, $transaction) {
         $sendTx = [
-            'method'        => 'sendTx',
-            'date'          => Carbon::parse($transaction->settledAt)->format('Y-m-d'),
-            'description'   => $transaction->description . " (" . $transaction->rawText . ")",
-            'category'      => $transaction->category,
-            'value'         => $transaction->amount->value
+            'date'              => Carbon::parse($transaction->settledAt)->format('Y-m-d'),
+            'description'       => $transaction->description . " (" . $transaction->rawText . ")",
+            'category'          => $transaction->category,
+            'value'             => $transaction->amount->value
         ];
         Log::debug("Req to $url: " . json_encode($sendTx));
-        switch($method) {
-            case 'get':
-                $response = Http::get($url, $sendTx);
-                break;
-            case 'post':
-                $response = Http::post($url, $sendTx);
-                break;
-            default:
-                Log::warning("Unknown method");
-                return;
-        }
+        $response = Http::get($url, $sendTx);
         Log::debug("Result: " . $response->getBody());
     }
 

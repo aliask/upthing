@@ -20,9 +20,9 @@
     </div>
     <div class="md:w-2/3">
       <select required class="form-input" id="action_type" name="action_type">
-        <option value="google_script_post" {{ $webhook->action_type==="google_script_post"?'selected':'' }}>Google Scripts POST</option>
-        <option value="google_script_get" {{ $webhook->action_type==="google_script_get"?'selected':'' }}>Google Scripts GET</option>
-        <option value="discord" {{ $webhook->action_type==="discord"?'selected':'' }}>Discord Notification</option>
+@foreach(\App\WebhookEndpoint::action_types as $type => $action)
+        <option value="{{ $type }}" {{ $type==$webhook->action_type?'selected':'' }}>{{ $action['name'] }}</option>
+@endforeach
       </select>
     </div>
   </div>
