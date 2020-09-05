@@ -112,12 +112,26 @@ td.shrink {
   width: 1%;
 }
 
-#contentArea {
-  @apply static max-h-full overflow-visible w-1/2 py-12;
-}
+#contentWrapper {
+  @apply w-3/4 flex flex-col py-12 px-4;
+  
+  @media (min-width: theme('screens.lg')) {
+    @apply flex-row-reverse;
+  }
 
-#actionArea {
-  @apply max-h-full overflow-visible w-1/4 p-12 text-right;
+  #contentArea {
+    @apply static max-h-full overflow-visible w-full;
+    @media (min-width: theme('screens.lg')) {
+      @apply w-3/4;
+    }
+  }
+
+  #actionArea {
+    @apply max-h-full overflow-visible w-full text-right px-6;
+    @media (min-width: theme('screens.lg')) {
+      @apply w-1/4;
+    }
+  }
 }
 
 .feather {

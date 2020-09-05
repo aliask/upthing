@@ -4,7 +4,7 @@
 @section('actions')
 <div class="py-1">
   <a href="{{ route('webhooks.create') }}" class="btn-action">
-    <i data-feather="plus"></i> Create new webhook
+    <i data-feather="plus"></i> Create webhook
   </a>
 </div>
 @endsection

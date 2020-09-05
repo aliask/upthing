@@ -831,21 +831,48 @@ td.shrink {
   width: 1%;
 }
 
-#contentArea {
+#contentWrapper {
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 1024px) {
+  #contentWrapper {
+    flex-direction: row-reverse;
+  }
+}
+
+#contentWrapper #contentArea {
   position: static;
   max-height: 100%;
   overflow: visible;
-  width: 50%;
-  padding-top: 3rem;
-  padding-bottom: 3rem;
+  width: 100%;
 }
 
-#actionArea {
+@media (min-width: 1024px) {
+  #contentWrapper #contentArea {
+    width: 75%;
+  }
+}
+
+#contentWrapper #actionArea {
   max-height: 100%;
   overflow: visible;
-  width: 25%;
-  padding: 3rem;
+  width: 100%;
   text-align: right;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  #contentWrapper #actionArea {
+    width: 25%;
+  }
 }
 
 .feather {
