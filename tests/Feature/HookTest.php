@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\WebhookEndpoint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\User;
 
 class HookTest extends TestCase
 {
@@ -42,6 +43,40 @@ class HookTest extends TestCase
 }
 PAYLOAD;
 
+    private $testUser;
+
+    protected function setUp(): void {
+      parent::setUp();
+      $this->testUser = User::create([
+        'username' => 'testUser',
+        'uptoken' => 'abc123',
+        'password' => 'abc123'
+      ]);
+    }
+    
+    protected function tearDown(): void {
+      $this->testUser->delete();
+      parent::tearDown();
+    }
+
+    private function createHook(string $type = 'json_post'): WebhookEndpoint {
+      $userid = $this->testUser->value('id');
+      $hookdata = [
+        'user_id' => $userid,
+        'description' => 'test hook',
+        'upid' => 'abc-123',
+        'secret_key' => '5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03',
+        'action_type' => $type,
+        'action_url' => 'https://httpbin.org/post'
+      ];
+
+      if($type === 'http_get') {
+        $hookdata['action_url'] = 'https://httpbin.org/get';
+      }
+
+      return WebhookEndpoint::create($hookdata);
+    }
+
     /**
      *
      * @return void
@@ -52,12 +87,13 @@ PAYLOAD;
       $payload->data->attributes->eventType = "PING";
       unset($payload->data->relationships->transaction);
 
-      $hook = WebhookEndpoint::where('secret_key', env('API_TEST_SECRET'))->first();
+      $hook = $this->createHook();
       $signature = hash_hmac('sha256', json_encode($payload), $hook->secret_key);
 
       $response = $this->postJson("/hook/test/$hook->id", (array)$payload, [
                       'X-Up-Authenticity-Signature' => $signature
                     ]);
+      $hook->delete();
       $response->assertStatus(200);
     }
 
@@ -71,12 +107,13 @@ PAYLOAD;
       $payload->data->attributes->eventType = "PING";
       unset($payload->data->relationships->transaction);
 
-      $hook = WebhookEndpoint::where('secret_key', env('API_TEST_SECRET'))->first();
+      $hook = $this->createHook();
       $signature = hash_hmac('sha256', json_encode($payload), $hook->secret_key);
 
       $response = $this->postJson('/hook/test/999', (array)$payload, [
                       'X-Up-Authenticity-Signature' => $signature
                     ]);
+      $hook->delete();
       $response->assertStatus(404);
     }
     
@@ -90,12 +127,13 @@ PAYLOAD;
       $payload->data->attributes->eventType = "PING";
       unset($payload->data->relationships->transaction);
 
-      $hook = WebhookEndpoint::where('secret_key', env('API_TEST_SECRET'))->first();
+      $hook = $this->createHook();
       $signature = hash_hmac('sha256', json_encode($payload), 'Invalid');
 
       $response = $this->postJson("/hook/test/$hook->id", (array)$payload, [
                       'X-Up-Authenticity-Signature' => $signature
                     ]);
+      $hook->delete();
       $response->assertStatus(401);
     }
     
@@ -109,8 +147,9 @@ PAYLOAD;
       $payload->data->attributes->eventType = "PING";
       unset($payload->data->relationships->transaction);
 
-      $hook = WebhookEndpoint::where('secret_key', env('API_TEST_SECRET'))->first();
+      $hook = $this->createHook();
       $response = $this->postJson("/hook/test/$hook->id", (array)$payload);
+      $hook->delete();
       $response->assertStatus(401);
     }
 
@@ -124,13 +163,14 @@ PAYLOAD;
       $payload = json_decode($this->samplePayload);
       $payload->data->attributes->eventType = "TRANSACTION_SETTLED";
 
-      $hook = WebhookEndpoint::where('action_type', 'http_get')->first();
+      $hook = $this->createHook('http_get');
 
       $signature = hash_hmac('sha256', json_encode($payload), $hook->secret_key);
 
       $response = $this->postJson("/hook/test/$hook->id", (array)$payload, [
                       'X-Up-Authenticity-Signature' => $signature
                     ]);
+      $hook->delete();
       $response->assertStatus(200);
     }
 
@@ -144,13 +184,14 @@ PAYLOAD;
       $payload = json_decode($this->samplePayload);
       $payload->data->attributes->eventType = "TRANSACTION_SETTLED";
 
-      $hook = WebhookEndpoint::where('action_type', 'json_post')->first();
+      $hook = $this->createHook('json_post');
 
       $signature = hash_hmac('sha256', json_encode($payload), $hook->secret_key);
 
       $response = $this->postJson("/hook/test/$hook->id", (array)$payload, [
                       'X-Up-Authenticity-Signature' => $signature
                     ]);
+      $hook->delete();
       $response->assertStatus(200);
     }
 
@@ -164,13 +205,14 @@ PAYLOAD;
       $payload = json_decode($this->samplePayload);
       $payload->data->attributes->eventType = "TRANSACTION_SETTLED";
 
-      $hook = WebhookEndpoint::where('action_type', 'discord')->first();
+      $hook = $this->createHook('discord');
 
       $signature = hash_hmac('sha256', json_encode($payload), $hook->secret_key);
 
       $response = $this->postJson("/hook/test/$hook->id", (array)$payload, [
                       'X-Up-Authenticity-Signature' => $signature
                     ]);
+      $hook->delete();
       $response->assertStatus(200);
     }
 }
