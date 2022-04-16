@@ -1,0 +1,70 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        - PUID=33
+        - PGID=33
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: updb
+      DB_PORT: 5432
+      DB_DATABASE: upthing
+      DB_USERNAME: upthing
+      DB_PASSWORD: ${DB_PASSWORD}
+      TZ: Australia/Melbourne
+    working_dir: /var/www
+    volumes:
+       - ./public:/var/www/public
+       - ./app:/var/www/app:ro
+    networks:
+      - upthing
+
+  webserver:
+    image: nginx:stable
+    restart: unless-stopped
+    environment:
+      TZ: Australia/Melbourne
+      #ports:
+      #- "8083:80"
+    depends_on:
+      - app
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.upthing.rule=Host(`up.willrobertson.id.au`)"
+      - "traefik.http.routers.upthing.tls.certresolver=myresolver"
+    networks:
+      - proxy
+      - upthing
+
+  db:
+    container_name: updb
+    image: postgres:12
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: upthing
+      POSTGRES_DB: upthing
+      TZ: Australia/Melbourne
+    networks:
+      - upthing
+
+volumes:
+  db_data:
+
+networks:
+  upthing:
+  proxy:
+    external:
+      name: traefik_proxy
