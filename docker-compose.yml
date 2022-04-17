@@ -18,9 +18,13 @@ services:
       DB_DATABASE: upthing
       DB_USERNAME: upthing
       DB_PASSWORD: ${DB_PASSWORD}
+      APP_DEBUG: "true"
+      APP_URL: https://up.willrobertson.id.au
+      FORCE_HTTPS: "true"
       TZ: Australia/Melbourne
     working_dir: /var/www
     volumes:
+       - ./config:/var/www/config:ro
        - ./public:/var/www/public
        - ./resources:/var/www/resources:ro
        - ./routes:/var/www/routes:ro
