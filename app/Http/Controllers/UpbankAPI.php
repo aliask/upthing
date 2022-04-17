@@ -73,8 +73,8 @@ class UpbankAPI extends Controller
         Log::debug('UpAPI: Response - ' . $response->getBody());
         $data = $this->processResponse($response);
         $transactions = new Collection();
-        foreach($data as $account) {
-            $transactions->push(new Transaction($account));
+        foreach($data as $transaction) {
+            $transactions->push(Transaction::fromUpTransaction($transaction));
         }
         return $transactions;
     }
@@ -87,7 +87,7 @@ class UpbankAPI extends Controller
         Log::info("UpAPI: getTransaction $transaction");
         $response = $this->api->get("/transactions/$transaction");
         $data = $this->processResponse($response);
-        return new Transaction($data);
+        return Transaction::fromUpTranaction($data);
     }
 
     /**
