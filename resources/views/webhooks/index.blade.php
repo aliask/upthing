@@ -21,7 +21,6 @@
       </thead>
     <tbody class="text-gray-700">
   @forelse ($webhooks as $i=>$webhook)
-      <!-- @json($webhook) -->
       <tr class="{{ ($i%2)?'bg-gray-100':''}}">
       @if($webhook->id)
         <td class="expand"><a href="{{ route('webhooks.show', $webhook->id) }}">{{ $webhook->description }}</a></td>
