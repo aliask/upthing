@@ -53,7 +53,8 @@ RUN groupmod -o -g ${PGID} www-data && \
 
 # Copy and run composer
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
-RUN composer install  --no-scripts --no-plugins --no-interaction
+RUN composer install  --no-scripts --no-plugins --no-interaction && \
+    composer update
 
 COPY .env.example .env
 
