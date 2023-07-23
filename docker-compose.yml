@@ -10,10 +10,11 @@ services:
         - PGID=33
     restart: unless-stopped
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DB_CONNECTION: pgsql
-      DB_HOST: updb
+      DB_HOST: db
       DB_PORT: 5432
       DB_DATABASE: upthing
       DB_USERNAME: upthing
@@ -38,8 +39,6 @@ services:
     restart: unless-stopped
     environment:
       TZ: Australia/Melbourne
-      #ports:
-      #- "8083:80"
     depends_on:
       - app
     volumes:
@@ -54,7 +53,6 @@ services:
       - upthing
 
   db:
-    container_name: updb
     image: postgres:12
     restart: unless-stopped
     volumes:
@@ -66,6 +64,11 @@ services:
       TZ: Australia/Melbourne
     networks:
       - upthing
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   db_data:
