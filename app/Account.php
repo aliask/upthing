@@ -4,6 +4,7 @@ namespace App;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use NumberFormatter;
 
 class Account extends Model
@@ -12,11 +13,12 @@ class Account extends Model
 
     public function __construct($upAccount)
     {
+        Log::debug("Creating account from " . json_encode($upAccount));
         $this->rawAccount = $upAccount;
         $this->upid = $upAccount->id;
         $this->name = $upAccount->attributes->displayName;
         $this->balance = $upAccount->attributes->balance;
-        $this->createdAt = $upAccount->createdAt;
+        $this->createdAt = $upAccount->attributes->createdAt;
     }
 
     public function getTimestampAttribute() {

@@ -3,17 +3,28 @@
 namespace App;
 
 use Carbon\Carbon;
+use ErrorException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use NumberFormatter;
 
 class Transaction extends Model
 {
     public $timestamps = false;
 
-    public function __construct($upid, $attributes)
+    public function __construct($upTransaction)
     {
-        $this->upid = $upid;
-        $this->forceFill((array)$attributes);
+        Log::debug("Creating Transaction from " . json_encode($upTransaction));
+        $this->rawTransaction = $upTransaction;
+        $this->upid = $upTransaction->id;
+        $this->forceFill((array)$upTransaction->attributes);
+
+        try {
+            $this->category = $upTransaction->relationships->category->data->id;
+        } catch(ErrorException $e) {
+            $this->category = null;
+        }
+
     }
 
     public function getTimestampAttribute() {

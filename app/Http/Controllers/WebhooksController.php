@@ -254,10 +254,10 @@ class WebhooksController extends Controller
 
         $sendTx = [
             'method'        => 'sendTx',
-            'date'          => Carbon::parse($transaction->attributes->settledAt)->format('Y-m-d'),
-            'description'   => $transaction->attributes->description . " (" . $transaction->attributes->rawText . ")",
-            'category'      => $transaction->relationships->category->data->id,
-            'value'         => $transaction->attributes->amount->value
+            'date'          => Carbon::parse($transaction->settledAt)->format('Y-m-d'),
+            'description'   => $transaction->description . " (" . $transaction->rawText . ")",
+            'category'      => $transaction->category,
+            'value'         => $transaction->amount->value
         ];
         Log::debug("Req to $sheetsAPI: " . json_encode($sendTx));
         $response = Http::get($sheetsAPI, $sendTx);

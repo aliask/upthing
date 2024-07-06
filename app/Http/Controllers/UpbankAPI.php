@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Account;
+use App\Transaction;
+use Exception;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -19,60 +23,67 @@ class UpbankAPI extends Controller
     }
 
     /**
+     * @param \Illuminate\Http\Client\Response $response Raw response from Up API
+     * @return object Data object
+     */
+    private function processResponse($response) {
+        Log::debug('UpAPI: Response - ' . $response->getBody());
+        $response->throw();
+        $json = json_decode($response->getBody());
+        if(!$json->data) {
+            throw new Exception("Unexpected format returned by Up API");
+        }
+        return $json->data;
+    }
+
+    /**
      * @param integer $pageSize Page size
-     * @return object
+     * @return Collection Collection of Account Models
      */
     public function getAccounts($pageSize = 30) {
         $response = $this->api->get('/accounts', ['page[size]' => $pageSize ]);
-        $response->throw();
-        $json = json_decode($response->getBody());
-        if(isset($json->data))
-            return $json->data;
-        else
-            return new \stdClass();
+        $data = $this->processResponse($response);
+        $accounts = new Collection();
+        foreach($data as $account) {
+            $accounts->push(new Account($account));
+        }
+        return $accounts;
     }
 
     /**
      * @param string $upid Account Up ID
-     * @return object
+     * @return Account Account Model
      */
     public function getAccount($upid) {
         $response = $this->api->get("/accounts/$upid");
-        $response->throw();
-        $json = json_decode($response->getBody());
-        if(isset($json->data))
-            return $json->data;
-        else
-            return new \stdClass();
+        $data = $this->processResponse($response);
+        return new Account($data);
     }
 
     /**
      * @param string $account Account Up ID
      * @param integer $pageSize Page Size
-     * @return object
+     * @return Collection
      */
     public function getAccountTransactions($account, $pageSize = 100) {
         $response = $this->api->get("/accounts/$account/transactions", ['page[size]' => $pageSize ]);
-        $response->throw();
-        $json = json_decode($response->getBody());
-        if(isset($json->data))
-            return $json->data;
-        else
-            return new \stdClass();
+        Log::debug('UpAPI: Response - ' . $response->getBody());
+        $data = $this->processResponse($response);
+        $transactions = new Collection();
+        foreach($data as $account) {
+            $transactions->push(new Transaction($account));
+        }
+        return $transactions;
     }
 
     /**
      * @param string $transaction Upbank ID
-     * @return object
+     * @return Transaction
      */
     public function getTransaction($transaction) {
         $response = $this->api->get("/transactions/$transaction");
-        $response->throw();
-        $json = json_decode($response->getBody());
-        if(isset($json->data))
-            return $json->data;
-        else
-            return new \stdClass();
+        $data = $this->processResponse($response);
+        return new Transaction($data);
     }
 
     /**
@@ -81,12 +92,8 @@ class UpbankAPI extends Controller
      */
     public function getWebhooks($pageSize = 30) {
         $response = $this->api->get('/webhooks', ['page[size]' => $pageSize ]);
-        $response->throw();
-        $json = json_decode($response->getBody());
-        if(isset($json->data))
-            return $json->data;
-        else
-            return new \stdClass();
+        $data = $this->processResponse($response);
+        return $data;
     }
 
     /**
@@ -98,13 +105,8 @@ class UpbankAPI extends Controller
         $data = ['data' => [ 'attributes' => compact(['url','description']) ]];
         Log::info('UpAPI: Create webhook - ' . json_encode($data));
         $response = $this->api->post('/webhooks', $data);
-        Log::debug('UpAPI: Response - ' . $response->getBody());
-        $response->throw();
-        $json = json_decode($response->getBody());
-        if(isset($json->data))
-            return $json->data;
-        else
-            return new \stdClass();
+        $data = $this->processResponse($response);
+        return $data;
     }
 
     /**
@@ -114,25 +116,15 @@ class UpbankAPI extends Controller
     public function pingWebhook($upid) {
         Log::info("UpAPI: Ping webhook - $upid");
         $response = $this->api->post("/webhooks/$upid/ping");
-        Log::debug('UpAPI: Response - ' . $response->getBody());
-        $response->throw();
-        $json = json_decode($response->getBody());
-        if(isset($json->data))
-            return $json->data;
-        else
-            return new \stdClass();
+        $data = $this->processResponse($response);
+        return $data;
     }
 
     public function deleteWebhook($upid) {
         Log::info("UpAPI: Delete webhook - $upid");
         $response = $this->api->delete("/webhooks/$upid");
-        Log::debug('UpAPI: Response - ' . $response->getBody());
-        $response->throw();
-        $json = json_decode($response->getBody());
-        if(isset($json->data))
-            return $json->data;
-        else
-            return new \stdClass();
+        $data = $this->processResponse($response);
+        return $data;
     }
 
 

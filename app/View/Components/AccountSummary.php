@@ -8,22 +8,10 @@ class AccountSummary extends Component
 {
 
     /**
-     * Account name
-     * @var string
+     * Account model
+     * @var App\Account
      */
-    public $name;
-
-    /**
-     * Account balance, in format 123.45
-     * @var string
-     */
-    public $balance;
-
-    /**
-     * UPid
-     * @var string
-     */
-    public $upid;
+    public $account;
 
     /**
      * Create a new component instance.
@@ -32,9 +20,7 @@ class AccountSummary extends Component
      */
     public function __construct($account)
     {
-        $this->name = $account->attributes->displayName;
-        $this->balance = $account->attributes->balance->value;
-        $this->upid = $account->id;
+        $this->account = $account;
     }
 
     /**

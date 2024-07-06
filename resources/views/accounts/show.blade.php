@@ -1,5 +1,5 @@
 @extends('layout')
-@section('title', $account->attributes->displayName)
+@section('title', $account->name)
 
 @section('content')
 <div class="w-3/4">
