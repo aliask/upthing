@@ -20,8 +20,8 @@
     <div class="md:w-2/3">
       <select required class="form-input" id="action_type" name="action_type">
         <option></option>
-        <option value="google_script_post">Google Scripts doPost</option>
-        <option value="google_script_get">Google Scripts doGet</option>
+        <option value="google_script_post">Google Scripts POST</option>
+        <option value="google_script_get">Google Scripts GET</option>
         <option value="discord">Discord Notification</option>
       </select>
     </div>
