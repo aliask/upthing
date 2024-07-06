@@ -2,7 +2,7 @@
 @section('title', 'Delete Webhook')
 
 @section('content')
-<form class="w-full max-w-sm" action="{{ route('webhooks.serverdestroy', $upid) }}" method="POST">
+<form action="{{ route('webhooks.serverdestroy', $upid) }}" method="POST">
   @csrf
   @method('delete')
   Are you sure you want to delete webhook "{{ $upid }}"?

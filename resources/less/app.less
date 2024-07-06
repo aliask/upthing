@@ -93,7 +93,11 @@ td.shrink {
 }
 
 #contentArea {
-  @apply w-full static max-h-full overflow-visible w-3/4 py-12;
+  @apply static max-h-full overflow-visible w-1/2 py-12;
+}
+
+#actionArea {
+  @apply max-h-full overflow-visible w-1/4 p-12 text-right;
 }
 
 .feather {
@@ -101,7 +105,7 @@ td.shrink {
 }
 
 .btn-action {
-  @apply shadow bg-purple-500 text-white font-bold py-2 px-4 rounded;
+  @apply inline-block shadow bg-purple-500 text-white font-bold py-2 px-4 rounded;
   &:hover {
     @apply bg-purple-400;
   }

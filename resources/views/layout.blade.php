@@ -38,6 +38,7 @@
   </nav>
 
   <div id="mainBody" class="flex">
+
     <div id="sidebar">
       <div id="navWrapper">
         <nav id="nav">
@@ -87,7 +88,7 @@
       </div>
     </div>
 
-    <div id="contentArea" class="">
+    <div id="contentArea">
 
       <h2 class="title m-b-md">
         @yield('title')
@@ -113,6 +114,10 @@
 @endif
 
       @yield('content')
+    </div>
+
+    <div id="actionArea">
+      @yield('actions')
     </div>
 
   </div> <!-- mainBody -->

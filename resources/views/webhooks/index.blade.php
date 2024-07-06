@@ -1,15 +1,13 @@
 @extends('layout')
 @section('title', 'Webhooks')
 
+@section('actions')
+  <a href="{{ route('webhooks.create') }}" class="btn-action">
+    <i data-feather="plus"></i> Create new webhook
+  </a>
+@endsection
+
 @section('content')
-<div class="w-3/4">
-
-  <div class="text-right p-4">
-    <a href="{{ route('webhooks.create') }}" class="btn-action">
-      Create new webhook
-    </a>
-  </div>
-
   <table class="min-w-full">
       <thead>
         <tr>
@@ -42,4 +40,4 @@
     </tbody>
   </table>
 
-  @endsection
+@endsection

@@ -731,7 +731,7 @@ h3 {
   color: rgba(160, 174, 192, var(--text-opacity));
 }
 
-#sidebar #navWrapper #nav .section svg.feather {
+#sidebar #navWrapper #nav .section .feather {
   margin: 0.25rem;
 }
 
@@ -801,21 +801,29 @@ td.shrink {
 }
 
 #contentArea {
-  width: 100%;
   position: static;
   max-height: 100%;
   overflow: visible;
-  width: 75%;
+  width: 50%;
   padding-top: 3rem;
   padding-bottom: 3rem;
 }
 
-svg.feather {
+#actionArea {
+  max-height: 100%;
+  overflow: visible;
+  width: 25%;
+  padding: 3rem;
+  text-align: right;
+}
+
+.feather {
   display: inline;
   padding: 0.25rem;
 }
 
 .btn-action {
+  display: inline-block;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   --bg-opacity: 1;
   background-color: #9f7aea;

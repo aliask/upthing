@@ -8,8 +8,10 @@
     </tr>
   </thead>
   <tbody>
-@foreach($transactions as $transaction)
-    <tr class="transaction">
+@foreach($transactions as $i => $transaction)
+
+
+    <tr class="transaction {{ ($i%2)?'bg-gray-100':''}}">
 
       <td title="{{ $transaction->createdAt }}" class="shrink">
         <span>{{ $transaction->date }}</span>

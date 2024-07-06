@@ -2,7 +2,7 @@
 @section('title', 'Create Webhook')
 
 @section('content')
-<form class="w-3/4" action="{{ route('webhooks.store') }}" method="POST">
+<form action="{{ route('webhooks.store') }}" method="POST">
   @csrf
   <div class="form-group">
     <div class="md:w-1/3">
