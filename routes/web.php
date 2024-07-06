@@ -22,6 +22,7 @@ Route::middleware('auth')->group(function() {
     Route::resource('accounts', 'AccountsController');
     Route::resource('webhooks', 'WebhooksController');
     Route::get('webhooks/{hookid}/delete', 'WebhooksController@delete')->name('webhooks.delete');
+    Route::get('webhooks/{hookid}/test', 'WebhooksController@test')->name('webhooks.test');
     Route::get('webhooks/serverdelete/{hookid}', 'WebhooksController@serverdelete')->name('webhooks.serverdelete');
     Route::delete('webhooks/serverdelete/{hookid}', 'WebhooksController@serverdestroy')->name('webhooks.serverdestroy');
     Route::get('webhooks/{hookid}/ping', 'WebhooksController@ping')->name('webhooks.ping');

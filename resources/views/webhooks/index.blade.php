@@ -29,6 +29,7 @@
         <td class="shrink">{{ $webhook->created_at }}</td>
         <td class="text-right shrink">
           <a class="btn-action" href="{{ route('webhooks.ping', $webhook->id) }}" title="Ping"><i data-feather="activity"></i></a>
+          <a class="btn-action" href="{{ route('webhooks.test', $webhook->id) }}" title="Test"><i data-feather="cloud-lightning"></i></a>
           <a class="btn-action" href="{{ route('webhooks.edit', $webhook->id) }}" title="Edit"><i data-feather="edit"></i></a>
           <a class="btn-action" href="{{ route('webhooks.delete', $webhook->id) }}" title="Delete"><i data-feather="trash"></i></a>
         </td>

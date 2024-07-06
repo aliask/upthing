@@ -8,6 +8,11 @@
   </a>
 </div>
 <div class="py-1">
+  <a href="{{ route('webhooks.test', $webhook->id) }}" class="btn-action">
+    <i data-feather="cloud-lightning"></i> Test Webhook
+  </a>
+</div>
+<div class="py-1">
   <a href="{{ route('webhooks.edit', $webhook->id) }}" class="btn-action">
     <i data-feather="edit"></i> Edit Webhook
   </a>

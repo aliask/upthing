@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Amount;
 use App\User;
+use App\Transaction;
 use App\Webhook;
 use App\WebhookEndpoint;
 use Carbon\Carbon;
@@ -283,17 +285,63 @@ class WebhooksController extends Controller
     }
 
     /**
+     * Send a test transaction to the WebhookEndpoint
+     * 
+     * @param int $id Up ID of Webhook to send test transaction to
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function test($id) {
+        $hook = WebhookEndpoint::findOrFail($id);
+        if(Auth::user()->id != $hook->user_id) {
+            Log::warning("User does not own this webhook");
+        }
+
+        $transaction = new Transaction([
+            'description'   => 'Fake transaction',
+            'rawText'       => 'Please ignore',
+            'status'        => 'SETTLED',
+            'category'      => 'Transferring Money'
+        ]);
+        $value = random_int(1,9999);
+        $transaction->amount = new Amount([
+            "currencyCode" => "AUD",
+            "value" => number_format($value/100.0, 2, '.', ''),
+            "valueInBaseUnits" => $value
+        ]);
+
+        $method = $hook->handler;
+        if($method) {
+            $response = $this->$method($hook->action_url, $transaction);
+            $json = $response->json();
+            $success = $response->successful() && ($json["success"] ?? true);
+            if($success) {
+                return redirect()->back()->with('message', "Triggered webhook with test data");
+            } else {
+                $message = "Error while sending request (HTTP " . $response->status() . ")";
+                if(isset($json["message"])) {
+                    $message .= " - " . $json["message"];
+                }
+            }
+        } else {
+            $message = "No handler for $hook->action_type";
+        }
+        Log::warning($message);
+        return redirect()->back()->withErrors($message);
+    }
+
+    /**
      * Sends a POST request with JSON-encoded transaction
      * 
      * @param string $url The URL of the POST endpoint
      * @param \App\Transaction $transaction Transaction to send
-     * @return null
+     * @return \Illuminate\Http\Client\Response
      */
     private function sendPost($url, $transaction) {
         $sendTx = $transaction->rawTransaction;
-        Log::debug("Req to $url: " . json_encode($sendTx));
+        Log::debug("POST Req to $url: " . json_encode($sendTx));
         $response = Http::post($url, (array)$sendTx);
         Log::debug("Result: " . $response->getBody());
+        return $response;
     }
 
     /**
@@ -301,7 +349,7 @@ class WebhooksController extends Controller
      * 
      * @param string $url The URL of the GET endpoint
      * @param \App\Transaction $transaction Transaction to send
-     * @return null
+     * @return \Illuminate\Http\Client\Response
      */
     private function sendGet($url, $transaction) {
         $sendTx = [
@@ -310,9 +358,10 @@ class WebhooksController extends Controller
             'category'          => $transaction->category,
             'value'             => $transaction->amount->value
         ];
-        Log::debug("Req to $url: " . json_encode($sendTx));
+        Log::debug("GET Req to $url: " . json_encode($sendTx));
         $response = Http::get($url, $sendTx);
         Log::debug("Result: " . $response->getBody());
+        return $response;
     }
 
     /**
@@ -320,7 +369,7 @@ class WebhooksController extends Controller
      * 
      * @param string $url The URL of the Discord endpoint (e.g. https://discordapp.com/api/webhooks/{id}/{token})
      * @param \App\Transaction $transaction Transaction to send
-     * @return null
+     * @return \Illuminate\Http\Client\Response
      */
     private function sendDiscord($url, $transaction) {
         $fields[] = [
@@ -341,6 +390,7 @@ class WebhooksController extends Controller
         $payload = ["embeds" => $embeds];
         $response = Http::post($url, $payload);
         Log::debug("Result: " . $response->getBody());
+        return $response;
     }
 
 }

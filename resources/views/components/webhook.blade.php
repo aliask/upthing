@@ -8,6 +8,7 @@
     <div>
       {{ $webhook->description }}
       <a class="btn-action" href="{{ route('webhooks.ping', $webhook->id) }}">Ping</a>
+      <a class="btn-action" href="{{ route('webhooks.test', $webhook->id) }}">Test</a>
       <a class="btn-action" href="#">Delete</a>
     </div>
   </div>
