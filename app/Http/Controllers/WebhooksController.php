@@ -248,13 +248,14 @@ class WebhooksController extends Controller
     }
 
     public function sendTransaction($transaction) {
+        Log::notice("Sending transaction to gSheets");
         Log::debug(json_encode($transaction));
         $sheetsAPI = env("SHEETS_ENDPOINT");
 
         $sendTx = [
             'method'        => 'sendTx',
             'date'          => Carbon::parse($transaction->attributes->settledAt)->format('Y-m-d'),
-            'description'   => $transaction->attributes->rawText,
+            'description'   => $transaction->attributes->description . " (" . $transaction->attributes->rawText . ")",
             'category'      => $transaction->relationships->category->data->id,
             'value'         => $transaction->attributes->amount->value
         ];

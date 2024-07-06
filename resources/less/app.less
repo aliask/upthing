@@ -27,8 +27,51 @@ h3 {
     }
   }
   .links {
-    @apply flex-grow flex items-center w-auto;
+    @apply flex-grow flex items-center w-auto justify-end;
+    .btn {
+      @apply inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white mt-4 mt-0;
+      &:hover {
+        @apply border-transparent text-orange-500 bg-white;
+      }
+    }
   }
+}
+
+#sidebar {
+  @apply fixed inset-0 bg-white static overflow-y-visible border-b-0 w-1/4 border-0;
+  #navWrapper {
+    @apply overflow-y-auto scrolling-touch relative sticky;
+  
+    #nav {
+      @apply px-6 pt-6 overflow-y-auto text-base text-sm py-12 pl-6 pr-8;
+      .section {
+        @apply mb-8;
+        h5 {
+          @apply mb-2 uppercase tracking-wide font-bold text-xs text-gray-500;
+        }
+
+        .link {
+          @apply px-2 -mx-2 py-1 transition duration-500 ease-in-out relative block text-gray-600 font-medium;
+          &:hover {
+            @apply text-gray-900;
+            transform: translate(2px);
+          }
+        }
+
+        li ul {
+          @apply ml-5;
+        }
+      }
+    }
+  }
+}
+
+#contentArea {
+  @apply w-full static max-h-full overflow-visible w-3/4 py-12;
+}
+
+svg.feather {
+  @apply inline m-2;
 }
 
 .btn-action {
