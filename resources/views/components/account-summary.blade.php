@@ -12,4 +12,5 @@
       </a>
     </div>
   </div>
+  <!-- @json($account) -->
 </div>
