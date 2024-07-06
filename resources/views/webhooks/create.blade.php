@@ -20,9 +20,9 @@
     <div class="md:w-2/3">
       <select required class="form-input" id="action_type" name="action_type">
         <option></option>
-        <option value="google_script_post">Google Scripts POST</option>
-        <option value="google_script_get">Google Scripts GET</option>
-        <option value="discord">Discord Notification</option>
+@foreach(\App\WebhookEndpoint::action_types as $type => $action)
+        <option value="{{ $type }}">{{ $action['name'] }}</option>
+@endforeach
       </select>
     </div>
   </div>

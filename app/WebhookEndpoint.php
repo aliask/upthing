@@ -15,6 +15,21 @@ class WebhookEndpoint extends Model
         'user_id', 'description', 'upid', 'secret_key', 'action_type', 'action_url'
     ];
 
+    public const action_types = [
+        'http_get' => [
+            'name'      => "HTTP Get Query",
+            'handler'   => 'sendGet'
+        ],
+        'json_post' => [
+            'name'      => "JSON POST",
+            'handler'   => 'sendPost'
+        ],
+        'discord' => [
+            'name'      => "Discord Notification",
+            'handler'   => 'sendDiscord'
+        ]
+    ];
+
     protected $table = 'webhooks';
     
     public function user()
@@ -23,15 +38,18 @@ class WebhookEndpoint extends Model
     }
 
     public function getActionFriendlyAttribute() {
-        switch($this->action_type) {
-            case "google_script_get":
-                return 'Google Script GET';
-            case "google_script_post":
-                return 'Google Script POST';
-            case "discord":
-                return 'Discord Notification';
-            default:
-                return $this->action_type;
+        if(array_key_exists($this->action_type, self::action_types)) {
+            return self::action_types[$this->action_type]['name'];
+        } else {
+            return "Unknown type";
+        }
+    }
+
+    public function getHandlerAttribute() {
+        if(array_key_exists($this->action_type, self::action_types)) {
+            return self::action_types[$this->action_type]['handler'];
+        } else {
+            return;
         }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,8 +17,12 @@ class AccountsController extends Controller
     public function index()
     {
         $api = new UpbankAPI(Auth::user()->uptoken);
-        $accounts = $api->getAccounts();
-        return view('accounts.index', ['accounts' => $accounts ]);
+        try {
+            $accounts = $api->getAccounts();
+            return view('accounts.index', ['accounts' => $accounts ]);
+        } catch(RequestException $e) {
+            return view('accounts.index', ['accounts' => [] ])->withErrors("Unable to fetch accounts - " . $e->getMessage());
+        }
     }
 
     /**
@@ -50,11 +55,16 @@ class AccountsController extends Controller
     public function show($id)
     {
         $api = new UpbankAPI(Auth::user()->uptoken);
-        $accounts = $api->getAccounts();
-        $account = $api->getAccount($id);
-        $transactions = $api->getAccountTransactions($id);
-        return view('accounts.show', compact(['account', 'transactions', 'accounts']));
-    }
+        try {
+            $accounts = $api->getAccounts();
+            $account = $api->getAccount($id);
+            $transactions = $api->getAccountTransactions($id);
+            return view('accounts.show', compact(['account', 'transactions', 'accounts']));
+        } catch(RequestException $e) {
+            return view('accounts.show', ['accounts' => [], 'transactions' => [], 'accounts' => [] ])
+                ->withErrors("Unable to fetch account details - " . $e->getMessage());
+        }
+}
 
     /**
      * Show the form for editing the specified resource.

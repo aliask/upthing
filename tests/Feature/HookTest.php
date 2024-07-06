@@ -115,16 +115,36 @@ PAYLOAD;
     }
 
     /**
-     * Test an incoming transaction send to Gsheets via POST.
+     * Test an incoming transaction send to HTTP GET.
      *
      * @return void
      */
-    public function testIncomingTransactionGoogleScriptPost()
+    public function testIncomingTransactionToHttpGet()
     {
       $payload = json_decode($this->samplePayload);
       $payload->data->attributes->eventType = "TRANSACTION_SETTLED";
 
-      $hook = WebhookEndpoint::where('action_type', 'google_script_post')->first();
+      $hook = WebhookEndpoint::where('action_type', 'http_get')->first();
+
+      $signature = hash_hmac('sha256', json_encode($payload), $hook->secret_key);
+
+      $response = $this->postJson("/hook/test/$hook->id", (array)$payload, [
+                      'X-Up-Authenticity-Signature' => $signature
+                    ]);
+      $response->assertStatus(200);
+    }
+
+    /**
+     * Test an incoming transaction send to JSON POST.
+     *
+     * @return void
+     */
+    public function testIncomingTransactionToJsonPost()
+    {
+      $payload = json_decode($this->samplePayload);
+      $payload->data->attributes->eventType = "TRANSACTION_SETTLED";
+
+      $hook = WebhookEndpoint::where('action_type', 'json_post')->first();
 
       $signature = hash_hmac('sha256', json_encode($payload), $hook->secret_key);
 
