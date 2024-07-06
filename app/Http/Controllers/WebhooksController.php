@@ -340,7 +340,7 @@ class WebhooksController extends Controller
         $sendTx = $transaction->rawTransaction;
         Log::debug("POST Req to $url: " . json_encode($sendTx));
         $response = Http::post($url, (array)$sendTx);
-        Log::debug("Result: " . $response->getBody());
+        Log::debug("Response: HTTP " . $response->getStatusCode() . " - ". $response->getBody());
         return $response;
     }
 
@@ -360,7 +360,7 @@ class WebhooksController extends Controller
         ];
         Log::debug("GET Req to $url: " . json_encode($sendTx));
         $response = Http::get($url, $sendTx);
-        Log::debug("Result: " . $response->getBody());
+        Log::debug("Response: HTTP " . $response->getStatusCode() . " - ". $response->getBody());
         return $response;
     }
 
@@ -389,7 +389,7 @@ class WebhooksController extends Controller
         ];
         $payload = ["embeds" => $embeds];
         $response = Http::post($url, $payload);
-        Log::debug("Result: " . $response->getBody());
+        Log::debug("Response: HTTP " . $response->getStatusCode() . " - ". $response->getBody());
         return $response;
     }
 

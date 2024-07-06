@@ -87,7 +87,7 @@ class UpbankAPI extends Controller
         Log::info("UpAPI: getTransaction $transaction");
         $response = $this->api->get("/transactions/$transaction");
         $data = $this->processResponse($response);
-        return Transaction::fromUpTranaction($data);
+        return Transaction::fromUpTransaction($data);
     }
 
     /**
