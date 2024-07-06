@@ -12,7 +12,7 @@ class WebhookEndpoint extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'description', 'upid', 'secret_key'
+        'user_id', 'description', 'upid', 'secret_key', 'action_type', 'action_url'
     ];
 
     protected $table = 'webhooks';

@@ -60,11 +60,15 @@ class WebhooksController extends Controller
         try {
             $validatedData = $request->validate([
                 'description'   => 'required|max:64',
+                'action_type'   => 'required|in:google_script_get,google_script_post,discord',
+                'action_url'    => 'required|url'
             ]);
 
             $endpoint = WebhookEndpoint::create([
                 'user_id'       => Auth::user()->id,
-                'description'   => $validatedData['description']
+                'description'   => $validatedData['description'],
+                'action_type'   => $validatedData['action_type'],
+                'action_url'    => $validatedData['action_url']
             ]);
             $url = route('webhooks.handle', [
                 'user'          => Str::slug(Auth::user()->username, '-'),
@@ -105,7 +109,8 @@ class WebhooksController extends Controller
      */
     public function edit($id)
     {
-        //
+        $webhook = WebhookEndpoint::findOrFail($id);
+        return view('webhooks.edit', compact('webhook'));
     }
 
     /**
@@ -117,7 +122,13 @@ class WebhooksController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $webhook = WebhookEndpoint::findOrFail($id);
+        if($webhook->user_id != Auth::user()->id) {
+            abort(401);
+        }
+        $webhook->update($request->all());
+        $webhook->save();
+        return redirect(route('webhooks.index'))->with("message", "Webhook updated successfully");
     }
 
     /**
@@ -224,7 +235,7 @@ class WebhooksController extends Controller
                 $txid = $payload->data->relationships->transaction->data->id;
                 $api = new UpbankAPI(User::find($hook->user_id)->uptoken);
                 $transaction = $api->getTransaction($txid);
-                $this->sendTransaction($transaction);
+                $this->processHookTransaction($hook, $transaction);
                 break;
             case 'PING':
             case 'TRANSACTION_DELETED':
@@ -247,11 +258,26 @@ class WebhooksController extends Controller
         return redirect()->back()->with('message', "Ping requested");
     }
 
-    public function sendTransaction($transaction) {
-        Log::notice("Sending transaction to gSheets");
-        Log::debug(json_encode($transaction));
-        $sheetsAPI = env("SHEETS_ENDPOINT");
+    private function processHookTransaction($hook, $transaction) {
+        Log::notice("Performing action for incoming webhook");
+        Log::debug("  Webhook: " . json_encode($hook));
+        Log::debug("  Transaction: " . json_encode($transaction));
 
+        switch($hook->action_type) {
+            case 'google_script_get':
+                return $this->sendGoogleScript('get', $hook->action_url, $transaction);
+                break;
+            case 'google_script_post':
+                return $this->sendGoogleScript('post', $hook->action_url, $transaction);
+                break;
+            case 'discord':
+            default:
+                Log::warning('Not implemented');
+        }
+        return;
+    }
+
+    private function sendGoogleScript($method, $url, $transaction) {
         $sendTx = [
             'method'        => 'sendTx',
             'date'          => Carbon::parse($transaction->settledAt)->format('Y-m-d'),
@@ -259,8 +285,18 @@ class WebhooksController extends Controller
             'category'      => $transaction->category,
             'value'         => $transaction->amount->value
         ];
-        Log::debug("Req to $sheetsAPI: " . json_encode($sendTx));
-        $response = Http::get($sheetsAPI, $sendTx);
+        Log::debug("Req to $url: " . json_encode($sendTx));
+        switch($method) {
+            case 'get':
+                $response = Http::get($url, $sendTx);
+                break;
+            case 'post':
+                $response = Http::post($url, $sendTx);
+                break;
+            default:
+                Log::warning("Unknown method");
+                return;
+        }
         Log::debug("Result: " . $response->getBody());
     }
 

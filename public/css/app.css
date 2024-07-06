@@ -731,6 +731,10 @@ h3 {
   color: rgba(160, 174, 192, var(--text-opacity));
 }
 
+#sidebar #navWrapper #nav .section svg.feather {
+  margin: 0.25rem;
+}
+
 #sidebar #navWrapper #nav .section .link {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
@@ -775,8 +779,8 @@ h3 {
 }
 
 .transaction td {
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
 }
 
 .transaction .credit {
@@ -808,7 +812,7 @@ td.shrink {
 
 svg.feather {
   display: inline;
-  margin: 0.5rem;
+  padding: 0.25rem;
 }
 
 .btn-action {

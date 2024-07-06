@@ -10,27 +10,29 @@
     </a>
   </div>
 
-  <div class="shadow overflow-hidden rounded border-b border-gray-200">
-    <table class="min-w-full bg-white">
-      <thead class="bg-gray-800 text-white">
+  <table class="min-w-full">
+      <thead>
         <tr>
-          <th class="w-1/3 text-left py-3 px-4 uppercase font-semibold text-sm">Description</th>
-          <th class="w-1/3 text-left py-3 px-4 uppercase font-semibold text-sm">Created</th>
-          <th class="text-right py-3 px-4 uppercase font-semibold text-sm">Actions</th>
+          <th>Description</th>
+          <th>Webhook Action</th>
+          <th>Created</th>
+          <th></th>
         </tr>
       </thead>
     <tbody class="text-gray-700">
   @forelse ($webhooks as $i=>$webhook)
       <!-- @json($webhook) -->
       <tr class="{{ ($i%2)?'bg-gray-100':''}}">
-        <td class="w-1/3 text-left py-3 px-4">{{ $webhook->description }}</td>
-        <td class="w-1/3 text-left py-3 px-4">{{ $webhook->created_at }}</td>
-        <td class="text-right py-3 px-4">
+        <td class="expand">{{ $webhook->description }}</td>
+        <td class="expand">Test</td>
+        <td class="shrink">{{ $webhook->created_at }}</td>
+        <td class="text-right shrink p-4">
     @if($webhook->id)
-          <a class="btn-action" href="{{ route('webhooks.ping', $webhook->id) }}">Ping</a>
-          <a class="btn-action" href="{{ route('webhooks.delete', $webhook->id) }}">Delete</a>
+          <a class="btn-action" href="{{ route('webhooks.ping', $webhook->id) }}" title="Ping"><i data-feather="activity"></i></a>
+          <a class="btn-action" href="{{ route('webhooks.edit', $webhook->id) }}" title="Edit"><i data-feather="edit"></i></a>
+          <a class="btn-action" href="{{ route('webhooks.delete', $webhook->id) }}" title="Delete"><i data-feather="trash"></i></a>
     @else
-          <a class="btn-action" href="{{ route('webhooks.serverdelete', $webhook->upid) }}">Delete from server</a>
+          <a class="btn-action" href="{{ route('webhooks.serverdelete', $webhook->upid) }}"><i data-feather="trash"></i>Delete from server</a>
     @endif
         </td>
       </tr>
@@ -39,5 +41,5 @@
   @endforelse
     </tbody>
   </table>
-</div>
-@endsection
+
+  @endsection
