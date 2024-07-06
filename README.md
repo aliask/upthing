@@ -1,61 +1,92 @@
-<p align="center"><img src="https://res.cloudinary.com/dtfbvvkyp/image/upload/v1566331377/laravel-logolockup-cmyk-red.svg" width="400"></p>
+## About UpThing
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+UpThing uses the [Up Bank API](https://github.com/up-banking/api/) to provide a web interface for displaying account information and managing Webhooks.
 
-## About Laravel
+### Account view
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<img src="docs/transactions.jpg">
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Basic account information, including transaction listing is available to view using UpThing.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Webhook actions
 
-## Learning Laravel
+<img src="docs/webhooks.jpg">
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+The main purpose of creating UpThing was to configure webhooks for sending transaction information to various locations, including to Google Sheets and creating Discord Notifications.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Getting Started
 
-## Laravel Sponsors
+### Setting Up(thing)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+UpThing is a Laravel-based application. Please follow [these instructions](https://laravel.com/docs/7.x/installation) to get started.
 
-### Premium Partners
+Once that's done and you can see the login screen, grab your personal access token by following the instructions on Up's website [here](https://api.up.com.au/getting_started).
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[OP.GG](https://op.gg)**
+Create a new account on UpThing by using the register link up in the top corner and fill in the necessary details and you should be good to go!
 
-## Contributing
+### Discord Integration
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Create a new Discord webhook on a server you're an admin on:
+1. Open the Discord Server Settings, and go to Integrations
+1. Click Webhooks
+1. Click New Webhook
+1. Type in a name (this is what "user" the messages will come from)
+1. (Optional) Give the Bot an avatar
+1. Copy the Webhook URL
+1. Click Save
 
-## Code of Conduct
+Create a new UpThing webhook:
+1. Navigate to Webhooks, Create Webhook
+1. Give it a name
+1. Select Discord Notification for the Action Type
+1. Paste the Discord Webhook URL into the 'Action URL'
+1. Click Create Webhook
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Next time a transaction is settled, you should get a Discord Notification!
 
-## Security Vulnerabilities
+### Google Sheets Integration
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+A potentially much more useful integration is with Google Sheets, however the setup is a bit more involved.
+
+Firstly, you will need to set up a way for Google Sheets to receive the information from UpThing. This involves creating a script within the sheet (Tools -> Script Editor), and addding the following code: 
+
+```javascript
+function getNewRow(sheet) {
+  let Avals = sheet.getRange("A1:A").getValues();
+  let Alast = Avals.filter(String).length;
+  let newRow = Alast + 1;
+  return newRow;
+}
+
+function doPost(e) {
+  let jsonData = JSON.parse(e.postData.contents)
+  let transaction = {
+    "date": new Date(jsonData.attributes.settledAt),
+    "description": jsonData.attributes.description + " (" + jsonData.attributes.rawText + ")",
+    "category": jsonData.relationships.category.data.id,
+    "value": jsonData.attributes.amount.value
+  };
+  let ss = SpreadsheetApp.getActiveSpreadsheet();
+  let txSheet = ss.getSheetByName("Transactions");
+  
+  let newRow = getNewRow(txSheet);
+  
+  txSheet.getRange(newRow, 1, 1, 4).setValues([ [ 
+    transaction.date,
+    transaction.description,
+    transaction.category,
+    transaction.value
+  ]]);
+
+  let JSONOutput = ContentService.createTextOutput(`{"success":true}`);
+  JSONOutput.setMimeType(ContentService.MimeType.JSON);
+  return JSONOutput;
+}
+```
+Once this has been entered, publish the script as a Web App (with anonymous access). Google have some instructions on this process [here](https://developers.google.com/apps-script/guides/web).
+
+Create a new webhook as a JSON POST, and use the URL of the Google Script.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+UpThing is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

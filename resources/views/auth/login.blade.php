@@ -10,7 +10,7 @@
       <label class="form-label" for="username">Username</label>
     </div>
     <div class="md:w-2/3">
-      <input required class="form-input @error('username') is-invalid @enderror" id="username" name="username" type="text">
+      <input required class="form-input @error('username') is-invalid @enderror" autocomplete="off" id="username" name="username" type="text">
     </div>
   </div>
   <div class="form-group">
