@@ -6,15 +6,10 @@ use App\Webhook;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
-class WebhooksController extends UpbankAPI
+class WebhooksController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        parent::__construct();
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -22,7 +17,8 @@ class WebhooksController extends UpbankAPI
      */
     public function index()
     {
-        $hooks = parent::getWebhooks();
+        $api = new UpbankAPI(Auth::user()->uptoken);
+        $hooks = $api->getWebhooks();
         $webhooks = new Collection();
         foreach($hooks as $webhook) {
             $webhooks->push(new Webhook($webhook->id, $webhook->attributes));
@@ -53,7 +49,8 @@ class WebhooksController extends UpbankAPI
                 'url'           => 'required|url|max:300',
                 'description'   => 'required|max:64',
             ]);
-            $webhook = parent::createWebhook($validatedData['url'], $validatedData['description']);
+            $api = new UpbankAPI(Auth::user()->uptoken);
+            $webhook = $api->createWebhook($validatedData['url'], $validatedData['description']);
         } catch(\Exception $e) {
             return redirect()->back()->with("error", "Unable to create webhook: " . json_encode($e));
         }

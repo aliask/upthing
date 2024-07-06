@@ -26,6 +26,14 @@
   </div>
   <div class="form-group">
     <div class="md:w-1/3">
+      <label class="form-label @error('uptoken') text-red-400 @enderror" for="uptoken">Up API token</label>
+    </div>
+    <div class="md:w-2/3">
+      <input required class="form-input" id="uptoken" name="uptoken" type="text" autofocus>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="md:w-1/3">
       <label class="form-label @error('password') text-red-400 @enderror" for="password">Password</label>
     </div>
     <div class="md:w-2/3">

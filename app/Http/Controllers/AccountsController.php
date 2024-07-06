@@ -5,15 +5,11 @@ namespace App\Http\Controllers;
 use App\Transaction;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
-class AccountsController extends UpbankAPI
+class AccountsController extends Controller
 {
 
-    public function __construct()
-    {
-        $this->middleware('auth');
-	parent::__construct();
-    }
     /**
      * Display a listing of the resource.
      *
@@ -21,7 +17,8 @@ class AccountsController extends UpbankAPI
      */
     public function index()
     {
-        $accounts = parent::getAccounts();
+        $api = new UpbankAPI(Auth::user()->uptoken);
+        $accounts = $api->getAccounts();
         return view('accounts.index', ['accounts' => $accounts ]);
     }
 
@@ -54,9 +51,10 @@ class AccountsController extends UpbankAPI
      */
     public function show($id)
     {
-        $accounts = parent::getAccounts();
-        $account = parent::getAccount($id);
-        $txs = parent::getAccountTransactions($id);
+        $api = new UpbankAPI(Auth::user()->uptoken);
+        $accounts = $api->getAccounts();
+        $account = $api->getAccount($id);
+        $txs = $api->getAccountTransactions($id);
         $transactions = new Collection();
         foreach($txs as $transaction) {
             $transactions->push(new Transaction($transaction->id, $transaction->attributes));
