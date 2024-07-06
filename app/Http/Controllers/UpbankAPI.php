@@ -128,8 +128,8 @@ class UpbankAPI extends Controller
     public function deleteWebhook($upid) {
         Log::info("UpAPI: Delete webhook - $upid");
         $response = $this->api->delete("/webhooks/$upid");
-        $data = $this->processResponse($response);
-        return $data;
+        $response->throw();
+        return;
     }
 
     public function getHookLogs($upid) {
