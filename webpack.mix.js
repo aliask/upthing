@@ -14,11 +14,9 @@ const mix = require('laravel-mix');
 tailwindcss = require('tailwindcss');
 
 mix.js('resources/js/app.js', 'public/js')
-    .sass('resources/sass/app.scss', 'public/css')
-    .less('resources/less/tw.less', 'public/css')
+    .less('resources/less/app.less', 'public/css')
       .options({
         postCss: [
-          tailwindcss('tailwind.config.js'),
+          tailwindcss('tailwind.config.js')
         ]
       });
-
