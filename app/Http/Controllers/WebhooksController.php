@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Webhook;
 use App\WebhookEndpoint;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -193,7 +195,18 @@ class WebhooksController extends Controller
 
     public function sendTransaction($transaction) {
         Log::debug(json_encode($transaction));
-        return;
+        $sheetsAPI = env("SHEETS_ENDPOINT");
+
+        $sendTx = [
+            'method'        => 'sendTx',
+            'date'          => Carbon::parse($transaction->attributes->settledAt)->format('Y-m-d'),
+            'description'   => $transaction->attributes->rawText,
+            'category'      => $transaction->relationships->category->data->id,
+            'value'         => $transaction->attributes->amount->value
+        ];
+        Log::debug("Req to $sheetsAPI: " . json_encode($sendTx));
+        $response = Http::get($sheetsAPI, $sendTx);
+        Log::debug("Result: " . $response->getBody());
     }
 
 }
