@@ -6,18 +6,10 @@
   @csrf
   <div class="form-group">
     <div class="md:w-1/3">
-      <label class="form-label" for="webhook-url">URL</label>
+      <label class="form-label" for="description">Description</label>
     </div>
     <div class="md:w-2/3">
-      <input required class="form-input" id="webhook-url" type="url" maxlength="300" placeholder="Webhook URL">
-    </div>
-  </div>
-  <div class="form-group">
-    <div class="md:w-1/3">
-      <label class="form-label" for="webhook-description">Description</label>
-    </div>
-    <div class="md:w-2/3">
-      <input required class="form-input" id="webhook-description" type="text" maxlength="64" placeholder="Description">
+      <input required class="form-input" id="description" name="description" type="text" maxlength="64" placeholder="Description">
     </div>
   </div>
   

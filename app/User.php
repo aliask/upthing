@@ -16,7 +16,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'password', 'uptoken'
+        'username', 'password', 'uptoken'
     ];
 
     /**
@@ -36,4 +36,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function webhooks()
+    {
+        return $this->hasMany('App\WebhookEndpoints');
+    }
 }
