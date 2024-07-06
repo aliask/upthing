@@ -98,7 +98,13 @@ class WebhooksController extends Controller
      */
     public function show($id)
     {
-        //
+        $webhook = WebhookEndpoint::findOrFail($id);
+        if($webhook->user_id != Auth::user()->id) {
+            abort(401);
+        }
+        $api = new UpbankAPI(Auth::user()->uptoken);
+        $logs = $api->getHookLogs($webhook->upid);
+        return view('webhooks.show', compact('webhook', 'logs'));
     }
 
     /**

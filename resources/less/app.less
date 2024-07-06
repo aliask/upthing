@@ -90,15 +90,20 @@ h3 {
 .webhooks {
   thead {
     @apply border-b border-gray-400;
+    th {
+      @apply px-4 py-1;
+    }
   }
-  th {
-    @apply px-4 py-1;
-  }
-  td {
-    @apply px-4 py-1;
-    &:hover {
+  tbody {
+    tr:hover {
       @apply bg-gray-100;
     }
+    td {
+      @apply px-4 py-1;
+    }
+  }
+  a {
+    @apply underline;
   }
 }
 

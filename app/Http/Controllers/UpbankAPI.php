@@ -132,5 +132,12 @@ class UpbankAPI extends Controller
         return $data;
     }
 
+    public function getHookLogs($upid) {
+        Log::info("UpAPI: Get webhook logs - $upid");
+        $response = $this->api->get("/webhooks/$upid/logs");
+        $data = $this->processResponse($response);
+        return $data;
+    }
+
 
 }
