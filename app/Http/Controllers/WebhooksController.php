@@ -8,6 +8,7 @@ use App\WebhookEndpoint;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
@@ -24,13 +25,16 @@ class WebhooksController extends Controller
      */
     public function index()
     {
-        // $api = new UpbankAPI(Auth::user()->uptoken);
-        // $hooks = $api->getWebhooks();
-        // $webhooks = new Collection();
-        // foreach($hooks as $webhook) {
-        //     $webhooks->push(new Webhook($webhook->id, $webhook->attributes));
-        // }
         $webhooks = WebhookEndpoint::where('user_id', Auth::user()->id)->get();
+
+        // Add the Webhooks that the server knows about
+        $api = new UpbankAPI(Auth::user()->uptoken);
+        $hooks = $api->getWebhooks();
+        foreach($hooks as $webhook) {
+            if(WebhookEndpoint::where('upid', $webhook->id)->count() == 0)
+                $webhooks->push(new Webhook($webhook->id, $webhook->attributes));
+        }
+
         return view('webhooks.index', compact(['webhooks']));
     }
 
@@ -73,8 +77,9 @@ class WebhooksController extends Controller
             $endpoint->secret_key = $webhook->attributes->secretKey;
             $endpoint->save();
 
-            return redirect(route('webhook.index'))->with("message", "Created webhook!");
+            return redirect(route('webhooks.index'))->with("message", "Created webhook!");
         } catch(\Exception $e) {
+            Log::error("webhook.store:" . $e->getMessage());
             if($endpoint)
                 $endpoint->delete();
             return redirect()->back()->withErrors("Unable to create webhook!");
@@ -131,10 +136,59 @@ class WebhooksController extends Controller
             $api = new UpbankAPI(Auth::user()->uptoken);
             $api->deleteWebhook($webhook->upid);
             $webhook->delete();
-            return redirect()->back()->with('message', 'Webhook deleted');
-        } catch(Exception $e) {
-            return redirect()->back()->withErrors('Unable to delete webhook');
+            return redirect(route('webhooks.index'))->with('message', 'Webhook deleted');
+        } catch(RequestException $e) {
+            $response = $e->response;
+            if($response && $response->getStatusCode() == 404) {
+                $message = "Server webhook is gone, removed local orphan endpoint";
+                $webhook->delete();
+            } else {
+                $message = "Unable to delete webhook - " . $e->getMessage();
+            }
+            Log::error($message);
+            return redirect(route('webhooks.index'))->withErrors($message);
         }
+    }
+
+    /**
+     * Display confirmation before destroying webhook
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function delete($id) {
+        $webhook = WebhookEndpoint::findOrFail($id);
+        return view('webhooks.delete', compact('webhook'));
+    }
+
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  string  $upid
+     * @return \Illuminate\Http\Response
+     */
+    public function serverdestroy($upid)
+    {
+        try {
+            $api = new UpbankAPI(Auth::user()->uptoken);
+            $api->deleteWebhook($upid);
+            return redirect(route('webhooks.index'))->with('message', 'Webhook deleted');
+        } catch(Exception $e) {
+            $message = "Unable to delete webhook - " . $e->getMessage();
+            Log::error($message);
+            return redirect(route('webhooks.index'))->withErrors($message);
+        }
+    }
+
+    /**
+     * Display confirmation before destroying webhook
+     *
+     * @param  string  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function serverdelete($upid) {
+        return view('webhooks.serverdelete', compact('upid'));
     }
 
     /**
