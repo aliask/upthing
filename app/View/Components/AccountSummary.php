@@ -4,7 +4,7 @@ namespace App\View\Components;
 
 use Illuminate\View\Component;
 
-class Account extends Component
+class AccountSummary extends Component
 {
 
     /**
@@ -30,11 +30,11 @@ class Account extends Component
      *
      * @return void
      */
-    public function __construct($name, $balance, $upid)
+    public function __construct($account)
     {
-        $this->name = $name;
-        $this->balance = $balance;
-        $this->upid = $upid;
+        $this->name = $account->attributes->displayName;
+        $this->balance = $account->attributes->balance->value;
+        $this->upid = $account->id;
     }
 
     /**
@@ -44,6 +44,6 @@ class Account extends Component
      */
     public function render()
     {
-        return view('components.account');
+        return view('components.account-summary');
     }
 }

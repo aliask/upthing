@@ -4,7 +4,7 @@ namespace App\View\Components;
 
 use Illuminate\View\Component;
 
-class webhook extends Component
+class Webhook extends Component
 {
     public $webhook;
 

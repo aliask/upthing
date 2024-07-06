@@ -760,6 +760,42 @@ h3 {
   margin-left: 1.25rem;
 }
 
+.transaction {
+  border-bottom-width: 1px;
+  --border-opacity: 1;
+  border-color: #cbd5e0;
+  border-color: rgba(203, 213, 224, var(--border-opacity));
+  padding-top: 0.5rem;
+}
+
+.transaction:hover {
+  --bg-opacity: 1;
+  background-color: #f7fafc;
+  background-color: rgba(247, 250, 252, var(--bg-opacity));
+}
+
+.transaction td {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.transaction .credit {
+  --text-opacity: 1;
+  color: #2f855a;
+  color: rgba(47, 133, 90, var(--text-opacity));
+}
+
+.transaction .debit {
+  --text-opacity: 1;
+  color: #c53030;
+  color: rgba(197, 48, 48, var(--text-opacity));
+}
+
+td.shrink {
+  white-space: nowrap;
+  width: 1%;
+}
+
 #contentArea {
   width: 100%;
   position: static;
