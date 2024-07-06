@@ -17,8 +17,7 @@ class Account extends Model
         $this->rawAccount = $upAccount;
         $this->upid = $upAccount->id;
         $this->name = $upAccount->attributes->displayName;
-        $this->balance = $upAccount->attributes->balance;
-        $this->createdAt = $upAccount->attributes->createdAt;
+        $this->forceFill((array)$upAccount->attributes);
     }
 
     public function getTimestampAttribute() {
@@ -28,5 +27,16 @@ class Account extends Model
     public function getBalanceFormattedAttribute() {
         $fmt = new NumberFormatter(app()->getLocale(), NumberFormatter::CURRENCY);
         return $fmt->formatCurrency($this->balance->valueInBaseUnits/100.0, $this->balance->currencyCode);
+    }
+
+    public function getIconAttribute() {
+        switch($this->accountType) {
+            case 'TRANSACTIONAL':
+                return 'credit-card';
+            case 'SAVER':
+                return 'zap';
+            default:
+                return 'bar-chart-2';
+        }
     }
 }

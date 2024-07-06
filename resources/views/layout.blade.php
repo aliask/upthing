@@ -47,7 +47,7 @@
             <ul>
               <li>
                 <a href="{{ route('accounts.index') }}" class="link">
-                  <i data-feather="bar-chart-2"></i><span class="p-1">Accounts</span></a>
+                  <i class="text-xl" data-feather="bar-chart-2"></i><span class="p-1">Accounts</span></a>
 @if(isset($accounts))
                 <ul>
   @foreach($accounts as $account)
@@ -62,7 +62,7 @@
               </li>
               <li>
                 <a href="{{ route('webhooks.index') }}" class="link">
-                  <i data-feather="send"></i><span class="p-1">Webhooks</span>
+                  <i class="text-xl" data-feather="send"></i><span class="p-1">Webhooks</span>
                 </a>
               </li>
             </ul>
@@ -74,11 +74,11 @@
             <ul>
               <li>
                 <a href="https://github.com/aliask/upthing" class="link">
-                  <i data-feather="github"></i><span class="p-1">UpThing on GitHub</span></a>
+                  <i class="text-xl" data-feather="github"></i><span class="p-1">UpThing on GitHub</span></a>
               </li>
               <li>
                 <a href="https://willrobertson.id.au/" class="link">
-                  <i data-feather="feather"></i><span class="p-1">Will Robertson</span>
+                  <i class="text-xl" data-feather="feather"></i><span class="p-1">Will Robertson</span>
                 </a>
               </li>
             </ul>
@@ -123,7 +123,7 @@
   </div> <!-- mainBody -->
 
   <script>
-    feather.replace()
+    feather.replace({width: '1em', height: '1em'});
   </script>
 
 </body>
