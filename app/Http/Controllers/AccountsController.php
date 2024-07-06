@@ -8,6 +8,12 @@ use Illuminate\Http\Request;
 
 class AccountsController extends UpbankAPI
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+	parent::__construct();
+    }
     /**
      * Display a listing of the resource.
      *

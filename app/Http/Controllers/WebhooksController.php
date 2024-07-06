@@ -9,6 +9,12 @@ use Illuminate\Http\Request;
 
 class WebhooksController extends UpbankAPI
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+        parent::__construct();
+    }
+
     /**
      * Display a listing of the resource.
      *
