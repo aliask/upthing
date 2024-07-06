@@ -1,30 +1,31 @@
-FROM php:7.4-fpm
+FROM php:8.2-fpm
 
-ARG APCU_VERSION=5.1.18
+ARG APCU_VERSION=5.1.22
 
 # Get frequently used tools
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libicu-dev \
-    libzip-dev \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    libonig-dev \
-    libpq-dev \
-    locales \
-    zip \
-    unzip \
-    jpegoptim optipng pngquant gifsicle \
-    vim \
-    git \
-    curl \
-    wget \
-    cron
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential \
+      libicu-dev \
+      libzip-dev \
+      libpng-dev \
+      libjpeg62-turbo-dev \
+      libfreetype6-dev \
+      libonig-dev \
+      libpq-dev \
+      locales \
+      zip \
+      unzip \
+      jpegoptim optipng pngquant gifsicle \
+      vim \
+      git \
+      curl \
+      wget \
+      cron && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-configure zip
-RUN docker-php-ext-configure gd --with-freetype
-RUN docker-php-ext-install \
+RUN docker-php-ext-configure zip && \
+    docker-php-ext-configure gd --with-freetype && \
+    docker-php-ext-install \
         bcmath \
         gd \
         mbstring \
@@ -33,22 +34,9 @@ RUN docker-php-ext-install \
         zip \
         opcache \
         pdo \
-        pdo_pgsql
-
-# apcu for caching, xdebug for debugging and also phpunit coverage
-RUN pecl install \
-        apcu-${APCU_VERSION} \
-        xdebug \
-    && docker-php-ext-enable \
-        apcu \
-        xdebug
-
-
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# php-cs-fixer tool
-RUN wget https://cs.symfony.com/download/php-cs-fixer-v2.phar -O /usr/local/bin/php-cs-fixer
-RUN chmod +x /usr/local/bin/php-cs-fixer
+        pdo_pgsql && \
+    pecl install apcu-${APCU_VERSION} && \
+    docker-php-ext-enable apcu
 
 # Copy existing app directory
 COPY . /var/www
@@ -75,4 +63,4 @@ RUN chown -R www-data:www-data /var/www
 
 COPY ./docker/entrypoint.sh /
 COPY ./docker/wait-for-it.sh /usr/bin/
-ENTRYPOINT /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

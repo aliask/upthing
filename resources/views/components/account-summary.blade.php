@@ -8,5 +8,4 @@
       <p class="text-sm">{{ $account->balanceFormatted }}</p>
     </div>
   </div>
-  <!-- @json($account) -->
 </div>

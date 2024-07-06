@@ -24,7 +24,6 @@
 
       <td class="shrink text-sm text-right font-bold {{ $transaction->debitCredit }}">{{ $transaction->amountFormatted }}</td>
 
-      <!-- @json($transaction) -->
     </tr>
 @endforeach
   </tbody>
