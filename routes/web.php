@@ -20,6 +20,7 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function() {
     Route::resource('accounts', 'AccountsController');
+    Route::get('accounts/{id}/csv', 'AccountsController@exportCsv')->name('account.getcsv');
     Route::resource('webhooks', 'WebhooksController');
     Route::get('webhooks/{hookid}/delete', 'WebhooksController@delete')->name('webhooks.delete');
     Route::get('webhooks/{hookid}/test', 'WebhooksController@test')->name('webhooks.test');

@@ -21,4 +21,4 @@ chmod 640 .env
 echo Ensure permissions are configured for www-data
 chown www-data:www-data -R .
 
-docker-compose build --build-arg PUID=$(id -u www-data) --build-arg PGID=$(id -g www-data) app
+docker compose build --build-arg PUID=$(id -u www-data) --build-arg PGID=$(id -g www-data) app
