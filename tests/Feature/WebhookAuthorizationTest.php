@@ -43,7 +43,7 @@ class WebhookAuthorizationTest extends TestCase
       $this->hook = new WebhookEndpoint([
         'description' => 'owned hook',
         'action_type' => 'json_post',
-        'action_url' => 'https://example.com/hook'
+        'action_url' => 'https://203.0.113.10/hook'
       ]);
       $this->hook->user_id = $this->owner->id;
       $this->hook->upid = 'abc-123';
@@ -69,7 +69,7 @@ class WebhookAuthorizationTest extends TestCase
       $hook = new WebhookEndpoint([
         'description' => 'mass assigned',
         'action_type' => 'json_post',
-        'action_url' => 'https://example.com/hook',
+        'action_url' => 'https://203.0.113.10/hook',
         'user_id' => $this->attacker->id,
         'upid' => 'attacker-upid',
         'secret_key' => 'attacker-secret'
@@ -82,7 +82,7 @@ class WebhookAuthorizationTest extends TestCase
       // The legitimate fields still come through.
       $this->assertEquals('mass assigned', $hook->description);
       $this->assertEquals('json_post', $hook->action_type);
-      $this->assertEquals('https://example.com/hook', $hook->action_url);
+      $this->assertEquals('https://203.0.113.10/hook', $hook->action_url);
     }
 
     /**
@@ -114,7 +114,7 @@ class WebhookAuthorizationTest extends TestCase
       $response = $this->actingAs($this->owner)->patch("/webhooks/{$this->hook->id}", [
         'description' => 'still mine',
         'action_type' => 'json_post',
-        'action_url' => 'https://attacker.example/collect',
+        'action_url' => 'https://198.51.100.20/collect',
         'user_id' => $this->attacker->id
       ]);
 
@@ -136,7 +136,7 @@ class WebhookAuthorizationTest extends TestCase
       $response = $this->actingAs($this->owner)->patch("/webhooks/{$this->hook->id}", [
         'description' => 'owned hook',
         'action_type' => 'json_post',
-        'action_url' => 'https://example.com/hook',
+        'action_url' => 'https://203.0.113.10/hook',
         'secret_key' => 'attacker-chosen-key',
         'upid' => 'attacker-upid'
       ]);
@@ -158,7 +158,7 @@ class WebhookAuthorizationTest extends TestCase
       $response = $this->actingAs($this->owner)->patch("/webhooks/{$this->hook->id}", [
         'description' => 'new description',
         'action_type' => 'discord',
-        'action_url' => 'https://discord.com/api/webhooks/1/abc'
+        'action_url' => 'https://203.0.113.10/api/webhooks/1/abc'
       ]);
 
       $response->assertStatus(302);
@@ -166,7 +166,7 @@ class WebhookAuthorizationTest extends TestCase
       $this->hook->refresh();
       $this->assertEquals('new description', $this->hook->description);
       $this->assertEquals('discord', $this->hook->action_type);
-      $this->assertEquals('https://discord.com/api/webhooks/1/abc', $this->hook->action_url);
+      $this->assertEquals('https://203.0.113.10/api/webhooks/1/abc', $this->hook->action_url);
     }
 
     /**
@@ -177,13 +177,60 @@ class WebhookAuthorizationTest extends TestCase
       $response = $this->actingAs($this->attacker)->patch("/webhooks/{$this->hook->id}", [
         'description' => 'hijacked',
         'action_type' => 'json_post',
-        'action_url' => 'https://attacker.example/collect'
+        'action_url' => 'https://198.51.100.20/collect'
       ]);
 
       $response->assertStatus(403);
 
       $this->hook->refresh();
       $this->assertEquals('owned hook', $this->hook->description);
+    }
+
+    /**
+     * An action_url the app container can reach internally must be refused -
+     * otherwise the webhook machinery is an SSRF primitive.
+     *
+     * @return void
+     */
+    public function testUpdateRejectsPrivateActionUrl()
+    {
+      foreach ([
+        'https://169.254.169.254/latest/meta-data/',
+        'https://db:5432/',
+        'https://127.0.0.1/',
+        'http://203.0.113.10/'
+      ] as $url) {
+        $response = $this->actingAs($this->owner)->patch("/webhooks/{$this->hook->id}", [
+          'description' => 'owned hook',
+          'action_type' => 'json_post',
+          'action_url' => $url
+        ]);
+
+        $response->assertSessionHasErrors('action_url');
+      }
+
+      $this->hook->refresh();
+      $this->assertEquals('https://203.0.113.10/hook', $this->hook->action_url);
+    }
+
+    /**
+     * @return void
+     */
+    public function testNonOwnerCannotViewEditForm()
+    {
+      $response = $this->actingAs($this->attacker)->get("/webhooks/{$this->hook->id}/edit");
+
+      $response->assertStatus(403);
+    }
+
+    /**
+     * @return void
+     */
+    public function testNonOwnerCannotViewDeleteConfirmation()
+    {
+      $response = $this->actingAs($this->attacker)->get("/webhooks/{$this->hook->id}/delete");
+
+      $response->assertStatus(403);
     }
 
     /**
