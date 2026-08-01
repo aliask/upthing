@@ -32,6 +32,9 @@ services:
        - ./routes:/var/www/routes:ro
        - ./storage:/var/www/storage
        - ./app:/var/www/app:ro
+       # So the test suite picks up edits without an image rebuild.
+       - ./tests:/var/www/tests:ro
+       - ./phpunit.xml:/var/www/phpunit.xml:ro
     networks:
       - upthing
 
