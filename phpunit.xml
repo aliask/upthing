@@ -19,6 +19,9 @@
     </filter>
     <php>
         <server name="APP_ENV" value="testing"/>
+        <!-- Fixed key so the suite doesn't depend on entrypoint.sh having run
+             key:generate. Not a secret: it only covers test session cookies. -->
+        <server name="APP_KEY" value="base64:Rg3o53rY0mo5Wtgpe6Zb9WonxIaQJ+Rr8PefBLO+DGg="/>
         <server name="BCRYPT_ROUNDS" value="4"/>
         <server name="CACHE_DRIVER" value="array"/>
         <!-- <server name="DB_CONNECTION" value="sqlite"/> -->
