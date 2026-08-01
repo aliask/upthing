@@ -98,13 +98,36 @@ class AccountsController extends Controller
         $csv .= implode(',', $headers) . "\n";
         foreach ($transactions as $transaction) {
             $csv .= implode(',', [
-                $transaction['settledAt'] ?? $transaction['createdAt'],
-                '"' . str_replace('"', '""', $transaction['description']) . '"',
-                $transaction['catetgory'] ?? '',
-                $transaction['amount']->value,
+                $this->csvField($transaction['settledAt'] ?? $transaction['createdAt']),
+                $this->csvField($transaction['description']),
+                $this->csvField($transaction['catetgory'] ?? ''),
+                $this->csvField($transaction['amount']->value),
             ]) . "\n";
         }
         return $csv;
+    }
+
+    /**
+     * Quote a value for CSV, neutralising anything a spreadsheet would treat
+     * as a formula.
+     *
+     * Descriptions come from whoever sent the money, so a transaction
+     * described as =HYPERLINK(...) would otherwise execute on open. Genuine
+     * numbers are left alone, or every debit would import as text.
+     *
+     * @param  mixed  $value
+     * @return string
+     */
+    private function csvField($value)
+    {
+        $value = (string)$value;
+
+        if ($value !== '' && !is_numeric($value)
+            && in_array($value[0], ['=', '+', '-', '@', "\t", "\r"], true)) {
+            $value = "'" . $value;
+        }
+
+        return '"' . str_replace('"', '""', $value) . '"';
     }
 
     /**
