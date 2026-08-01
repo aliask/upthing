@@ -26,15 +26,15 @@ services:
       TZ: Australia/Melbourne
     working_dir: /var/www
     volumes:
-       - ./config:/var/www/config:ro
-       - ./public:/var/www/public
-       - ./resources:/var/www/resources:ro
-       - ./routes:/var/www/routes:ro
-       - ./storage:/var/www/storage
-       - ./app:/var/www/app:ro
+       - ./config:/var/www/config:ro,z
+       - ./public:/var/www/public:z
+       - ./resources:/var/www/resources:ro,z
+       - ./routes:/var/www/routes:ro,z
+       - ./storage:/var/www/storage:z
+       - ./app:/var/www/app:ro,z
        # So the test suite picks up edits without an image rebuild.
-       - ./tests:/var/www/tests:ro
-       - ./phpunit.xml:/var/www/phpunit.xml:ro
+       - ./tests:/var/www/tests:ro,z
+       - ./phpunit.xml:/var/www/phpunit.xml:ro,z
     networks:
       - upthing
 
