@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Amount;
+use App\Rules\PublicHttpsUrl;
 use App\User;
 use App\Transaction;
 use App\Webhook;
@@ -63,7 +64,7 @@ class WebhooksController extends Controller
         $validatedData = $request->validate([
             'description'   => 'required|max:64',
             'action_type'   => "required|in:$valid_action_types",
-            'action_url'    => 'required|url'
+            'action_url'    => ['required', 'url', new PublicHttpsUrl]
         ]);
 
         try {
@@ -136,7 +137,7 @@ class WebhooksController extends Controller
         $validatedData = $request->validate([
             'description'   => 'required|max:64',
             'action_type'   => "required|in:$valid_action_types",
-            'action_url'    => 'required|url'
+            'action_url'    => ['required', 'url', new PublicHttpsUrl]
         ]);
         $webhook->update($validatedData);
         return redirect(route('webhooks.index'))->with("message", "Webhook updated successfully");
