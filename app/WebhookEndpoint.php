@@ -9,10 +9,14 @@ class WebhookEndpoint extends Model
     /**
      * The attributes that are mass assignable.
      *
+     * Deliberately excludes user_id, upid and secret_key: those are set
+     * directly by the controller. Allowing them here lets a request rewrite
+     * the hook's owner and signing key.
+     *
      * @var array
      */
     protected $fillable = [
-        'user_id', 'description', 'upid', 'secret_key', 'action_type', 'action_url'
+        'description', 'action_type', 'action_url'
     ];
 
     public const action_types = [

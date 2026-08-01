@@ -23,6 +23,19 @@ class UpbankAPI extends Controller
     }
 
     /**
+     * Escape an ID before interpolating it into a request path.
+     *
+     * Without this, an ID containing "../" is resolved against the base URI
+     * and reaches an arbitrary Up API endpoint.
+     *
+     * @param string $id
+     * @return string
+     */
+    private function pathSegment($id) {
+        return rawurlencode($id);
+    }
+
+    /**
      * @param \Illuminate\Http\Client\Response $response Raw response from Up API
      * @return object Data object
      */
@@ -57,7 +70,7 @@ class UpbankAPI extends Controller
      */
     public function getAccount($upid) {
         Log::info("UpAPI: getAccount $upid");
-        $response = $this->api->get("/accounts/$upid");
+        $response = $this->api->get("/accounts/" . $this->pathSegment($upid));
         $data = $this->processResponse($response);
         return new Account($data);
     }
@@ -69,7 +82,7 @@ class UpbankAPI extends Controller
      */
     public function getAccountTransactions($account, $pageSize = 100) {
         Log::info("UpAPI: getAccountTransactions $account");
-        $response = $this->api->get("/accounts/$account/transactions", ['page[size]' => $pageSize ]);
+        $response = $this->api->get("/accounts/" . $this->pathSegment($account) . "/transactions", ['page[size]' => $pageSize ]);
         Log::debug('UpAPI: Response - ' . $response->getBody());
         $data = $this->processResponse($response);
         $transactions = new Collection();
@@ -85,7 +98,7 @@ class UpbankAPI extends Controller
      */
     public function getTransaction($transaction) {
         Log::info("UpAPI: getTransaction $transaction");
-        $response = $this->api->get("/transactions/$transaction");
+        $response = $this->api->get("/transactions/" . $this->pathSegment($transaction));
         $data = $this->processResponse($response);
         return Transaction::fromUpTransaction($data);
     }
@@ -120,21 +133,21 @@ class UpbankAPI extends Controller
      */
     public function pingWebhook($upid) {
         Log::info("UpAPI: Ping webhook - $upid");
-        $response = $this->api->post("/webhooks/$upid/ping");
+        $response = $this->api->post("/webhooks/" . $this->pathSegment($upid) . "/ping");
         $data = $this->processResponse($response);
         return $data;
     }
 
     public function deleteWebhook($upid) {
         Log::info("UpAPI: Delete webhook - $upid");
-        $response = $this->api->delete("/webhooks/$upid");
+        $response = $this->api->delete("/webhooks/" . $this->pathSegment($upid));
         $response->throw();
         return;
     }
 
     public function getHookLogs($upid) {
         Log::info("UpAPI: Get webhook logs - $upid");
-        $response = $this->api->get("/webhooks/$upid/logs");
+        $response = $this->api->get("/webhooks/" . $this->pathSegment($upid) . "/logs");
         $data = $this->processResponse($response);
         return $data;
     }
