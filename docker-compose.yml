@@ -1,5 +1,8 @@
 services:
-  app:
+  # Deliberately not "app": the webserver is attached to the shared
+  # traefik_proxy network, where other stacks' "app" services would shadow
+  # this one in DNS resolution.
+  upthing-app:
     build:
       context: .
       dockerfile: docker/Dockerfile
@@ -38,7 +41,7 @@ services:
     environment:
       TZ: Australia/Melbourne
     depends_on:
-      - app
+      - upthing-app
     volumes:
       - ./:/var/www
       - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
