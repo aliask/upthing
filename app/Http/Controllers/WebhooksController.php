@@ -117,6 +117,9 @@ class WebhooksController extends Controller
     public function edit($id)
     {
         $webhook = WebhookEndpoint::findOrFail($id);
+        if($webhook->user_id != Auth::user()->id) {
+            abort(403);
+        }
         return view('webhooks.edit', compact('webhook'));
     }
 
@@ -181,6 +184,9 @@ class WebhooksController extends Controller
      */
     public function delete($id) {
         $webhook = WebhookEndpoint::findOrFail($id);
+        if($webhook->user_id != Auth::user()->id) {
+            abort(403);
+        }
         return view('webhooks.delete', compact('webhook'));
     }
 
