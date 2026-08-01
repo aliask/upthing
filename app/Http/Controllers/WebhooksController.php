@@ -67,12 +67,9 @@ class WebhooksController extends Controller
         ]);
 
         try {
-            $endpoint = WebhookEndpoint::create([
-                'user_id'       => Auth::user()->id,
-                'description'   => $validatedData['description'],
-                'action_type'   => $validatedData['action_type'],
-                'action_url'    => $validatedData['action_url']
-            ]);
+            $endpoint = new WebhookEndpoint($validatedData);
+            $endpoint->user_id = Auth::user()->id;
+            $endpoint->save();
             $url = route('webhooks.handle', [
                 'user'          => Str::slug(Auth::user()->username, '-'),
                 'hookid'        => $endpoint->id
@@ -103,7 +100,7 @@ class WebhooksController extends Controller
     {
         $webhook = WebhookEndpoint::findOrFail($id);
         if($webhook->user_id != Auth::user()->id) {
-            abort(401);
+            abort(403);
         }
         $api = new UpbankAPI(Auth::user()->uptoken);
         $logs = $api->getHookLogs($webhook->upid);
@@ -133,10 +130,15 @@ class WebhooksController extends Controller
     {
         $webhook = WebhookEndpoint::findOrFail($id);
         if($webhook->user_id != Auth::user()->id) {
-            abort(401);
+            abort(403);
         }
-        $webhook->update($request->all());
-        $webhook->save();
+        $valid_action_types = implode(',', array_keys(\App\WebhookEndpoint::action_types));
+        $validatedData = $request->validate([
+            'description'   => 'required|max:64',
+            'action_type'   => "required|in:$valid_action_types",
+            'action_url'    => 'required|url'
+        ]);
+        $webhook->update($validatedData);
         return redirect(route('webhooks.index'))->with("message", "Webhook updated successfully");
     }
 
@@ -150,7 +152,7 @@ class WebhooksController extends Controller
     {
         $webhook = WebhookEndpoint::findOrFail($id);
         if($webhook->user_id != Auth::user()->id) {
-            abort(401);
+            abort(403);
         }
         try {
             $api = new UpbankAPI(Auth::user()->uptoken);
@@ -242,7 +244,11 @@ class WebhooksController extends Controller
         switch($hookType) {
             case 'TRANSACTION_SETTLED':
             case 'TRANSACTION_CREATED':
-                $txid = $payload->data->relationships->transaction->data->id;
+                $txid = $payload->data->relationships->transaction->data->id ?? null;
+                if(!is_string($txid) || !Str::isUuid($txid)) {
+                    Log::warning("Webhook payload carried a non-UUID transaction id");
+                    abort(400);
+                }
                 $api = new UpbankAPI(User::find($hook->user_id)->uptoken);
                 $transaction = $api->getTransaction($txid);
 
@@ -294,6 +300,7 @@ class WebhooksController extends Controller
         $hook = WebhookEndpoint::findOrFail($id);
         if(Auth::user()->id != $hook->user_id) {
             Log::warning("User does not own this webhook");
+            abort(403);
         }
 
         $transaction = new Transaction([

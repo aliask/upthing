@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\WebhookEndpoint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 use App\User;
 
@@ -47,11 +48,54 @@ PAYLOAD;
 
     protected function setUp(): void {
       parent::setUp();
+
+      // Nothing in this file should reach the network. The Up API returns one
+      // fixed settled transaction; every outbound hook target returns 200.
+      Http::fake([
+        'api.up.com.au/*' => Http::response($this->upTransactionResponse(), 200),
+        '*' => Http::response(['success' => true], 200)
+      ]);
+
       $this->testUser = User::create([
         'username' => 'testUser',
         'uptoken' => 'abc123',
         'password' => 'abc123'
       ]);
+    }
+
+    /**
+     * A single settled transaction, shaped as the Up API returns it.
+     *
+     * @return array
+     */
+    private function upTransactionResponse(): array {
+      return [
+        'data' => [
+          'type' => 'transactions',
+          'id' => 'a61bb618-fe63-43aa-939a-faf1a57e04ff',
+          'attributes' => [
+            'status' => 'SETTLED',
+            'rawText' => 'TEST MERCHANT',
+            'description' => 'Test Merchant',
+            'message' => null,
+            'amount' => [
+              'currencyCode' => 'AUD',
+              'value' => '-12.34',
+              'valueInBaseUnits' => -1234
+            ],
+            'settledAt' => '2020-08-13T17:50:20+10:00',
+            'createdAt' => '2020-08-13T17:50:20+10:00'
+          ],
+          'relationships' => [
+            'category' => [
+              'data' => [
+                'type' => 'categories',
+                'id' => 'restaurants-and-cafes'
+              ]
+            ]
+          ]
+        ]
+      ];
     }
     
     protected function tearDown(): void {
@@ -60,21 +104,22 @@ PAYLOAD;
     }
 
     private function createHook(string $type = 'json_post'): WebhookEndpoint {
-      $userid = $this->testUser->value('id');
-      $hookdata = [
-        'user_id' => $userid,
+      $hook = new WebhookEndpoint([
         'description' => 'test hook',
-        'upid' => 'abc-123',
-        'secret_key' => '5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03',
         'action_type' => $type,
-        'action_url' => 'https://httpbin.org/post'
-      ];
+        'action_url' => $type === 'http_get'
+          ? 'https://httpbin.org/get'
+          : 'https://httpbin.org/post'
+      ]);
 
-      if($type === 'http_get') {
-        $hookdata['action_url'] = 'https://httpbin.org/get';
-      }
+      // user_id, upid and secret_key are guarded against mass assignment,
+      // so they have to be set directly.
+      $hook->user_id = $this->testUser->id;
+      $hook->upid = 'abc-123';
+      $hook->secret_key = '5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03';
+      $hook->save();
 
-      return WebhookEndpoint::create($hookdata);
+      return $hook;
     }
 
     /**
@@ -172,6 +217,11 @@ PAYLOAD;
                     ]);
       $hook->delete();
       $response->assertStatus(200);
+
+      Http::assertSent(function ($request) {
+        return $request->method() === 'GET'
+          && str_starts_with($request->url(), 'https://httpbin.org/get');
+      });
     }
 
     /**
@@ -193,6 +243,13 @@ PAYLOAD;
                     ]);
       $hook->delete();
       $response->assertStatus(200);
+
+      Http::assertSent(function ($request) {
+        // sendPost forwards the raw Up transaction, not flattened fields.
+        return $request->method() === 'POST'
+          && $request->url() === 'https://httpbin.org/post'
+          && $request['id'] === 'a61bb618-fe63-43aa-939a-faf1a57e04ff';
+      });
     }
 
     /**
@@ -214,5 +271,11 @@ PAYLOAD;
                     ]);
       $hook->delete();
       $response->assertStatus(200);
+
+      Http::assertSent(function ($request) {
+        return $request->method() === 'POST'
+          && $request->url() === 'https://httpbin.org/post'
+          && isset($request['embeds']);
+      });
     }
 }
