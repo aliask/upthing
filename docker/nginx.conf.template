@@ -12,7 +12,11 @@ server {
     # Re-resolve the upstream at request time so an app container restart
     # doesn't strand us on a dead address. Requires a variable in
     # fastcgi_pass; a literal hostname is only resolved at startup.
-    resolver 127.0.0.11 valid=30s ipv6=off;
+    #
+    # The address is filled in at container start from resolv.conf, because
+    # it differs by runtime - Docker uses 127.0.0.11, podman's netavark does
+    # not. See docker/10-resolver.envsh.
+    resolver ${NGINX_RESOLVER} valid=30s ipv6=off;
 
     location ~ \.php$ {
         try_files $uri /index.php /index.php?q=$uri&$args =404;
