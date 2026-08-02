@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#
+# Run the test suite in the same image CI uses.
+#
+# Any arguments are passed through to `php artisan test`:
+#
+#   auto/test
+#   auto/test --filter=CsvExportTest
+#
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+source auto/lib.sh
+
+build_test_image
+
+echo "==> Running tests"
+exec "$CONTAINER" run --rm "$TEST_TAG" php artisan test "$@"

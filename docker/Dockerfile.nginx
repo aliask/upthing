@@ -1,0 +1,15 @@
+# nginx needs public/ on disk to serve the compiled assets and to make
+# try_files work - PHP itself is resolved by php-fpm in the app container.
+# Baking it in is what lets the production compose file drop its bind
+# mounts entirely.
+FROM nginx:stable
+
+# Only substitute NGINX_* placeholders, so nginx's own $uri, $args and
+# $upstream_app survive template rendering untouched.
+ENV NGINX_ENVSUBST_FILTER="^NGINX_"
+
+COPY docker/10-resolver.envsh /docker-entrypoint.d/10-resolver.envsh
+COPY docker/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY public /var/www/public
+
+RUN chmod +x /docker-entrypoint.d/10-resolver.envsh

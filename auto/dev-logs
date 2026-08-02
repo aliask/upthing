@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# Follow output from the local stack.
+#
+#   auto/dev-logs                 everything
+#   auto/dev-logs webserver       one service
+#
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+source auto/lib.sh
+
+exec "${COMPOSE[@]}" "${DEV_COMPOSE[@]}" logs -f "$@"

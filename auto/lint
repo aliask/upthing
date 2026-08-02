@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# Syntax-check every PHP source file. Runs inside the test image, so no
+# local PHP install is needed.
+#
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+source auto/lib.sh
+
+build_test_image
+
+# Checks the copy baked into the image rather than bind-mounting the working
+# tree: the image is rebuilt just above, and a mount would not resolve on a
+# containerised CI runner where $PWD is not a host path.
+echo "==> Checking syntax"
+exec "$CONTAINER" run --rm "$TEST_TAG" sh -c '
+  status=0
+  for file in $(find app config database routes tests -name "*.php"); do
+    if ! php -l "$file" >/dev/null 2>&1; then
+      php -l "$file" || true
+      status=1
+    fi
+  done
+  if [ "$status" -eq 0 ]; then
+    echo "No syntax errors."
+  fi
+  exit $status
+'

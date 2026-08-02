@@ -1,0 +1,12 @@
+.git
+.gitea
+.gitignore
+.gitattributes
+node_modules
+vendor
+docs
+.env
+.env.backup
+storage/logs/*.log
+docker-compose*.yml
+README.md

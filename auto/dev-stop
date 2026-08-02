@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+# Stop the local stack. Named volumes survive, so the database is still
+# there next time.
+#
+# To discard the database and storage as well:
+#
+#   auto/dev-stop --volumes
+#
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+source auto/lib.sh
+
+exec "${COMPOSE[@]}" "${DEV_COMPOSE[@]}" down "$@"

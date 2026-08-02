@@ -1,0 +1,112 @@
+name: CI
+
+# Both jobs live in one workflow because Gitea Actions cannot express
+# `needs:` across files, and that dependency is the only thing that makes
+# "tests run on each build" actually enforced.
+on:
+  push:
+  # Lets a run be started from the Actions tab without an empty commit.
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Login to registry
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        with:
+          registry: ${{ vars.IMAGE_REGISTRY }}
+          username: ${{ vars.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
+      # amd64 only: the test stage compiles the same PHP extensions as the
+      # app image, and doing that under QEMU would cost far more than it
+      # proves. The published image is still built for both.
+      - name: Build test image
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        with:
+          context: .
+          file: docker/Dockerfile
+          target: test
+          platforms: linux/amd64
+          load: true
+          tags: upthing-test:${{ github.sha }}
+          cache-from: type=registry,ref=${{ vars.IMAGE_REGISTRY }}/${{ github.repository }}:cache-test
+          cache-to: type=registry,ref=${{ vars.IMAGE_REGISTRY }}/${{ github.repository }}:cache-test,mode=max
+
+      # Both steps go through the auto/ scripts so local and CI run the same
+      # checks. SKIP_IMAGE_BUILD reuses the image built above instead of
+      # rebuilding it without the cache.
+      - name: Lint
+        env:
+          TEST_TAG: upthing-test:${{ github.sha }}
+          SKIP_IMAGE_BUILD: "1"
+        run: auto/lint
+
+      - name: Run tests
+        env:
+          TEST_TAG: upthing-test:${{ github.sha }}
+          SKIP_IMAGE_BUILD: "1"
+        run: auto/test
+
+  build:
+    name: Build image
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          # git describe needs the tags, which a depth-1 checkout omits.
+          fetch-depth: 0
+
+      - name: Login to registry
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        with:
+          registry: ${{ vars.IMAGE_REGISTRY }}
+          username: ${{ vars.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
+      - name: Get Meta
+        id: meta
+        run: |
+          echo REPO_NAME=$(echo ${GITHUB_REPOSITORY} | awk -F"/" '{print $2}') >> $GITHUB_OUTPUT
+          echo REPO_VERSION=$(git describe --tags --always | sed 's/^v//') >> $GITHUB_OUTPUT
+
+      - name: Build and push app image
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        with:
+          context: .
+          file: docker/Dockerfile
+          target: app
+          cache-from: type=registry,ref=${{ vars.IMAGE_REGISTRY }}/${{ github.repository }}:cache
+          cache-to: type=registry,ref=${{ vars.IMAGE_REGISTRY }}/${{ github.repository }}:cache,mode=max
+          platforms: |
+            linux/amd64
+            linux/arm64
+          push: true
+          tags: |
+            ${{ vars.IMAGE_REGISTRY }}/${{ github.repository }}:${{ steps.meta.outputs.REPO_VERSION }}
+            ${{ vars.IMAGE_REGISTRY }}/${{ github.repository }}:latest
+
+      # Separate image so nginx has public/ on disk without the production
+      # host needing a checkout.
+      - name: Build and push nginx image
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        with:
+          context: .
+          file: docker/Dockerfile.nginx
+          cache-from: type=registry,ref=${{ vars.IMAGE_REGISTRY }}/${{ github.repository }}-nginx:cache
+          cache-to: type=registry,ref=${{ vars.IMAGE_REGISTRY }}/${{ github.repository }}-nginx:cache,mode=max
+          platforms: |
+            linux/amd64
+            linux/arm64
+          push: true
+          tags: |
+            ${{ vars.IMAGE_REGISTRY }}/${{ github.repository }}-nginx:${{ steps.meta.outputs.REPO_VERSION }}
+            ${{ vars.IMAGE_REGISTRY }}/${{ github.repository }}-nginx:latest

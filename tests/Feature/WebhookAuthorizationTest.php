@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\WebhookEndpoint;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\User;
 
@@ -16,6 +17,8 @@ use App\User;
  */
 class WebhookAuthorizationTest extends TestCase
 {
+    use RefreshDatabase;
+
     private $owner;
     private $attacker;
     private $hook;

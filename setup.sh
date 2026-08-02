@@ -2,23 +2,32 @@
 
 set -eu
 
-if [ "$EUID" -ne 0 ]; then
-  echo "Must be run as root/sudo"
+# Prepares a production host. The images come from the registry, so this no
+# longer builds anything and the host does not need the app source - only
+# this script, docker-compose.yml and the .env it writes.
+
+if [ -e .env ]; then
+  echo ".env already exists - refusing to overwrite it."
   exit 1
 fi
 
-if [[ "${SUDO_USER:-}" != "" ]]; then
-  echo "Add $SUDO_USER user to www-data group"
-  usermod -aG $USER www-data
-fi
+echo "Generating .env"
 
-cp .env.example .env
-echo Generate a fresh DB password
-PW=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c10)
-echo "DB_PASSWORD=${PW}" > .env
-chmod 640 .env
+# Fixed for the life of the deployment. Rotating it invalidates every
+# session, and would orphan any encrypted column.
+APP_KEY="base64:$(head -c 32 /dev/urandom | base64)"
+DB_PASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c32)
 
-echo Ensure permissions are configured for www-data
-chown www-data:www-data -R .
+cat > .env <<EOF
+# Registry holding the images built by .gitea/workflows/ci.yml
+IMAGE_REGISTRY=
+IMAGE_TAG=latest
 
-docker compose build --build-arg PUID=$(id -u www-data) --build-arg PGID=$(id -g www-data) upthing-app
+APP_KEY=${APP_KEY}
+DB_PASSWORD=${DB_PASSWORD}
+EOF
+
+chmod 600 .env
+
+echo "Set IMAGE_REGISTRY in .env, then:"
+echo "  docker compose pull && docker compose up -d"

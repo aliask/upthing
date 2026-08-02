@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#
+# Run an artisan command against the running dev stack.
+#
+#   auto/artisan migrate:status
+#   auto/artisan tinker
+#   auto/artisan route:list
+#
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+source auto/lib.sh
+
+exec "${COMPOSE[@]}" "${DEV_COMPOSE[@]}" exec upthing-app php artisan "$@"

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+#
+# Build and start the local stack, then report where it is.
+#
+# Arguments are passed through to `compose up`, so `auto/dev-run
+# --force-recreate` works.
+#
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+source auto/lib.sh
+
+echo "==> Starting dev stack"
+"${COMPOSE[@]}" "${DEV_COMPOSE[@]}" up -d --build "$@"
+
+echo
+"${COMPOSE[@]}" "${DEV_COMPOSE[@]}" ps
+
+cat <<'EOF'
+
+Ready on http://localhost:8080
+
+  auto/dev-logs    follow output
+  auto/dev-shell   shell in the app container
+  auto/dev-stop    shut it down
+EOF

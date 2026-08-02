@@ -1,0 +1,10 @@
+#!/bin/sh
+# Sourced by the nginx image entrypoint before it renders the templates.
+#
+# nginx needs a literal IP in its resolver directive, and that address is
+# runtime-specific: Docker's embedded DNS is 127.0.0.11, podman's netavark
+# uses the network gateway. Reading resolv.conf works on both.
+NGINX_RESOLVER=$(awk '/^nameserver/ { print $2; exit }' /etc/resolv.conf)
+export NGINX_RESOLVER
+
+echo "10-resolver.envsh: using resolver ${NGINX_RESOLVER}"
