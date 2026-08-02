@@ -1,0 +1,64 @@
+# Local development. Restores the build and the bind mounts that the
+# production compose file no longer needs, publishes a port in place of
+# traefik, and supplies local-only credentials so no .env is required.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+#
+# Then browse to http://localhost:8080
+#
+# The :z suffixes label the mounts for SELinux; they are inert on hosts
+# without it, and :ro is kept alongside so the code stays read-only.
+services:
+  upthing-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: app
+      args:
+        - PUID=33
+        - PGID=33
+    environment:
+      # Local only. Production takes these from the host's .env.
+      APP_KEY: base64:B6UuCSPVy1sJs0xMrH03HRJZ/gjFPJce8NuoO9F2zqE=
+      DB_PASSWORD: upthing
+      APP_URL: http://localhost:8080
+      FORCE_HTTPS: "false"
+      APP_DEBUG: "true"
+      # Logs to the container's stderr, so `auto/dev-logs` shows them.
+      # storage/ is a named volume rather than a bind mount, so a log file on
+      # the host would not be visible anyway.
+      LOG_CHANNEL: stderr
+    volumes:
+      - ./app:/var/www/app:ro,z
+      - ./config:/var/www/config:ro,z
+      - ./resources:/var/www/resources:ro,z
+      - ./routes:/var/www/routes:ro,z
+      - ./public:/var/www/public:ro,z
+      # storage/ is deliberately NOT bind-mounted. The container writes as
+      # www-data (uid 33), which rootless podman maps to a subuid that does
+      # not own the host directory, so every write fails. The named volume
+      # from docker-compose.yml is used instead.
+      - ./tests:/var/www/tests:ro,z
+      - ./phpunit.xml:/var/www/phpunit.xml:ro,z
+
+  webserver:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.nginx
+    # traefik provides ingress in production; locally we publish directly.
+    ports:
+      - "8080:80"
+    volumes:
+      - ./public:/var/www/public:ro,z
+      - ./docker/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro,z
+
+  db:
+    environment:
+      POSTGRES_PASSWORD: upthing
+
+networks:
+  # traefik_proxy lives on the production host and is external there. Locally
+  # compose creates a throwaway network instead.
+  proxy:
+    external: false
+    name: upthing-dev-proxy
