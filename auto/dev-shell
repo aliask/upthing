@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#
+# Shell into the running app container.
+#
+# This is `exec`, so it lands in the live container without re-running the
+# entrypoint or its migrations.
+#
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+source auto/lib.sh
+
+exec "${COMPOSE[@]}" "${DEV_COMPOSE[@]}" exec upthing-app bash

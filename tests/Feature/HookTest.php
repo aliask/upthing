@@ -10,6 +10,8 @@ use App\User;
 
 class HookTest extends TestCase
 {
+    use RefreshDatabase;
+
 
     protected $samplePayload = <<<PAYLOAD
 {

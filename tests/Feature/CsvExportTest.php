@@ -3,11 +3,14 @@
 namespace Tests\Feature;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\User;
 
 class CsvExportTest extends TestCase
 {
+    use RefreshDatabase;
+
     private $user;
 
     protected function setUp(): void {
