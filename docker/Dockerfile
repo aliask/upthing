@@ -1,6 +1,6 @@
 # Shared runtime. The vendor, app and test stages all derive from this, so
 # composer resolves against exactly the platform the app runs on.
-FROM php:8.2-fpm AS base
+FROM php:8.4-fpm AS base
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential \
